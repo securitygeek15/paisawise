@@ -29,53 +29,55 @@
 
 ## How to Run
 
-### Option 1: Docker (Recommended)
+### Option 1: One Command (Recommended)
 
-Run both frontend and backend using Docker Compose:
+Run both backend and frontend together with a single command:
+
+```bash
+npm run dev
+```
+
+Or using Python:
+
+```bash
+python run.py
+```
+
+On Windows, you can also double-click `run.bat`.
+
+- Frontend: http://localhost:3000
+- Backend API: http://localhost:8000
+- API Docs: http://localhost:8000/docs
+
+---
+
+### Option 2: Docker
+
+Run with Docker Compose:
 
 ```bash
 docker compose up --build
 ```
 
-- Frontend: http://localhost:3000
-- Backend API: http://localhost:8000
-- API Documentation: http://localhost:8000/docs
-
 ---
 
-### Option 2: Local Setup
-
-#### Prerequisites
-- Python 3.11+
-- Node.js 20+
+### Option 3: Separate Terminals
 
 #### 1. Backend
-
 ```bash
 cd backend
 python -m venv venv
-
-# On Windows:
-.\venv\Scripts\activate
-
-# On macOS/Linux:
-source venv/bin/activate
-
+.\venv\Scripts\activate   # or source venv/bin/activate on macOS/Linux
 pip install -r requirements.txt
 uvicorn app.main:app --port 8000 --reload
 ```
 
-The backend API will run on http://localhost:8000.
-
 #### 2. Frontend
-
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
-
-The frontend will run on http://localhost:3000.
 
 #### Demo Account
 Click "Explore Instant Demo Account" on the login screen to load preconfigured sample data.
