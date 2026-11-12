@@ -52,7 +52,6 @@ def main():
     signal.signal(signal.SIGINT, shutdown)
     signal.signal(signal.SIGTERM, shutdown)
 
-    # Wait for either process to exit
     try:
         while True:
             b_exit = backend_process.poll()

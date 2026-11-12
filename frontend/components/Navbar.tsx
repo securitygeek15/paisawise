@@ -2,15 +2,16 @@
 
 import React from "react";
 import { useAuth } from "@/lib/auth-context";
-import { Sparkles, Menu, X, ArrowUpRight } from "lucide-react";
+import { Sparkles, Menu, HelpCircle } from "lucide-react";
 
 interface NavbarProps {
   onOpenMobileMenu: () => void;
   onOpenAssistant: () => void;
   onOpenNewTx: () => void;
+  onOpenCanIAfford: () => void;
 }
 
-export function Navbar({ onOpenMobileMenu, onOpenAssistant, onOpenNewTx }: NavbarProps) {
+export function Navbar({ onOpenMobileMenu, onOpenAssistant, onOpenNewTx, onOpenCanIAfford }: NavbarProps) {
   const { user } = useAuth();
 
   return (
@@ -31,14 +32,14 @@ export function Navbar({ onOpenMobileMenu, onOpenAssistant, onOpenNewTx }: Navba
         </div>
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1.5">
         <button
-          onClick={onOpenAssistant}
-          className="flex h-8 items-center gap-1.5 rounded-md border border-[#EAEAEA] bg-white px-2.5 text-xs font-medium text-[#171717] hover:bg-[#F4F4F4] transition-colors"
-          title="Ask AI Assistant"
+          onClick={onOpenCanIAfford}
+          className="flex h-8 items-center gap-1 rounded-md border border-[#171717] bg-[#FAFAFA] px-2 text-xs font-medium text-[#171717] hover:bg-[#F4F4F4] transition-colors"
+          title="Can I Afford It?"
         >
-          <Sparkles className="h-3.5 w-3.5 text-[#171717]" />
-          <span>Assistant</span>
+          <HelpCircle className="h-3.5 w-3.5" />
+          <span className="hidden sm:inline">Afford?</span>
         </button>
 
         <button

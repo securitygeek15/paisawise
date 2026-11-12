@@ -143,3 +143,21 @@ export interface DeepAnalyticsData {
   monthly_history: MonthlyHistoryItem[];
 }
 
+export interface AffordabilityResponse {
+  verdict: "SAFE" | "CAUTION" | "DANGER";
+  verdict_title: string;
+  advice: string;
+  hours_of_work: number;
+  work_time_formatted: string;
+  hourly_rate: number | string;
+  current_balance: number | string;
+  upcoming_bills: number | string;
+  discretionary_before: number | string;
+  discretionary_after: number | string;
+  daily_budget_before: number | string;
+  daily_budget_after: number | string;
+  days_remaining: number;
+  goal_impact?: string | null;
+}
+
+

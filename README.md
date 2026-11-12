@@ -18,6 +18,7 @@
 
 ## Main Features
 
+- "Can I Afford This?" (Impulse Buy Simulator): Live simulation evaluating planned purchases against upcoming rent, scheduled bills, remaining daily allowance, and cost in working hours.
 - Overview Dashboard: Centralized view of total balance, monthly income, expenses, net savings, daily spending trends, and calculated financial insights.
 - Transactions Management: Add, edit, delete, search, filter by category/type/date, and sort financial records.
 - Category Budgets: Set monthly spending caps by category with visual warnings when nearing or exceeding limits.

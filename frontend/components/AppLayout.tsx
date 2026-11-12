@@ -9,6 +9,7 @@ import { MobileDrawer } from "./MobileDrawer";
 import { AuthModal } from "./AuthModal";
 import { AssistantModal } from "./AssistantModal";
 import { AddTransactionModal } from "./AddTransactionModal";
+import { CanIAffordModal } from "./CanIAffordModal";
 import { OverviewView } from "./views/OverviewView";
 import { TransactionsView } from "./views/TransactionsView";
 import { BudgetsView } from "./views/BudgetsView";
@@ -25,6 +26,7 @@ export function AppLayout() {
   // Modals
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isAssistantOpen, setIsAssistantOpen] = useState(false);
+  const [isCanIAffordOpen, setIsCanIAffordOpen] = useState(false);
   const [isTxModalOpen, setIsTxModalOpen] = useState(false);
   const [editingTx, setEditingTx] = useState<Transaction | null>(null);
 
@@ -75,6 +77,7 @@ export function AppLayout() {
         onSelectTab={setCurrentTab}
         onOpenAssistant={() => setIsAssistantOpen(true)}
         onOpenNewTx={handleOpenNewTx}
+        onOpenCanIAfford={() => setIsCanIAffordOpen(true)}
       />
 
       {/* Mobile Top Navbar */}
@@ -82,6 +85,7 @@ export function AppLayout() {
         onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
         onOpenAssistant={() => setIsAssistantOpen(true)}
         onOpenNewTx={handleOpenNewTx}
+        onOpenCanIAfford={() => setIsCanIAffordOpen(true)}
       />
 
       {/* Main Content Area */}
@@ -93,6 +97,7 @@ export function AppLayout() {
               onNavigate={setCurrentTab}
               onOpenNewTx={handleOpenNewTx}
               onOpenAssistant={() => setIsAssistantOpen(true)}
+              onOpenCanIAfford={() => setIsCanIAffordOpen(true)}
             />
           )}
 
@@ -131,9 +136,30 @@ export function AppLayout() {
         onSelectTab={setCurrentTab}
         onOpenAssistant={() => setIsAssistantOpen(true)}
         onOpenNewTx={handleOpenNewTx}
+        onOpenCanIAfford={() => setIsCanIAffordOpen(true)}
       />
 
       {/* Modals */}
+      <CanIAffordModal
+        isOpen={isCanIAffordOpen}
+        onClose={() => setIsCanIAffordOpen(false)}
+        onRecordExpense={(name, amount) => {
+          setEditingTx({
+            id: 0,
+            user_id: 0,
+            name,
+            amount,
+            type: "expense",
+            category: "Shopping",
+            transaction_date: new Date().toISOString().split("T")[0],
+            payment_method: "UPI",
+            notes: "Recorded via Can-I-Afford simulation",
+            created_at: new Date().toISOString(),
+          });
+          setIsTxModalOpen(true);
+        }}
+      />
+
       <AssistantModal
         isOpen={isAssistantOpen}
         onClose={() => setIsAssistantOpen(false)}

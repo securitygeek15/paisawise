@@ -14,6 +14,7 @@ import {
   Plus,
   LogOut,
   User as UserIcon,
+  HelpCircle,
 } from "lucide-react";
 
 export type NavTab =
@@ -30,6 +31,7 @@ interface SidebarProps {
   onSelectTab: (tab: NavTab) => void;
   onOpenAssistant: () => void;
   onOpenNewTx: () => void;
+  onOpenCanIAfford: () => void;
 }
 
 export function Sidebar({
@@ -37,6 +39,7 @@ export function Sidebar({
   onSelectTab,
   onOpenAssistant,
   onOpenNewTx,
+  onOpenCanIAfford,
 }: SidebarProps) {
   const { user, logout } = useAuth();
 
@@ -73,14 +76,21 @@ export function Sidebar({
           </span>
         </div>
 
-        {/* Primary Action Button */}
-        <div className="px-1">
+        {/* Action Buttons */}
+        <div className="px-1 space-y-1.5">
           <button
             onClick={onOpenNewTx}
             className="w-full flex items-center justify-center gap-2 rounded-md bg-[#171717] py-2 px-3 text-xs font-medium text-white hover:bg-neutral-800 active:scale-[0.99] transition-all"
           >
             <Plus className="h-4 w-4" />
             <span>Add Transaction</span>
+          </button>
+          <button
+            onClick={onOpenCanIAfford}
+            className="w-full flex items-center justify-center gap-2 rounded-md border border-[#171717] bg-[#FAFAFA] py-1.5 px-3 text-xs font-medium text-[#171717] hover:bg-[#F4F4F4] transition-all"
+          >
+            <HelpCircle className="h-3.5 w-3.5" />
+            <span>Can I Afford This?</span>
           </button>
         </div>
 

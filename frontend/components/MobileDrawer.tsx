@@ -15,6 +15,7 @@ import {
   X,
   LogOut,
   Plus,
+  HelpCircle,
 } from "lucide-react";
 
 interface MobileDrawerProps {
@@ -24,6 +25,7 @@ interface MobileDrawerProps {
   onSelectTab: (tab: NavTab) => void;
   onOpenAssistant: () => void;
   onOpenNewTx: () => void;
+  onOpenCanIAfford: () => void;
 }
 
 export function MobileDrawer({
@@ -33,6 +35,7 @@ export function MobileDrawer({
   onSelectTab,
   onOpenAssistant,
   onOpenNewTx,
+  onOpenCanIAfford,
 }: MobileDrawerProps) {
   const { user, logout } = useAuth();
 
@@ -97,9 +100,19 @@ export function MobileDrawer({
             <button
               onClick={() => {
                 onClose();
+                onOpenCanIAfford();
+              }}
+              className="flex items-center justify-center gap-2 rounded-md border border-[#171717] bg-[#FAFAFA] py-2 text-xs font-medium text-[#171717]"
+            >
+              <HelpCircle className="h-3.5 w-3.5" />
+              <span>Can I Afford This?</span>
+            </button>
+            <button
+              onClick={() => {
+                onClose();
                 onOpenAssistant();
               }}
-              className="flex items-center justify-center gap-2 rounded-md border border-[#EAEAEA] bg-[#FAFAFA] py-2 text-xs font-medium text-[#171717]"
+              className="flex items-center justify-center gap-2 rounded-md border border-[#EAEAEA] bg-[#FAFAFA] py-2 text-xs font-medium text-[#737373]"
             >
               <Sparkles className="h-3.5 w-3.5" />
               <span>Ask AI Assistant</span>

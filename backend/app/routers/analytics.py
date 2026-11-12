@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, Query
+from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 from sqlalchemy import func, extract, desc
 from typing import Optional, List, Dict, Any
@@ -6,7 +7,7 @@ from datetime import date, timedelta
 from decimal import Decimal
 import calendar
 from app.database import get_db
-from app.models import Transaction, Budget, User
+from app.models import Transaction, Budget, User, SavingsGoal, RecurringPayment
 from app.schemas import (
     FinancialSummary,
     SpendingTrendPoint,
@@ -398,3 +399,162 @@ def get_deep_analytics(
         "category_spending": categories,
         "monthly_history": monthly_history,
     }
+
+
+class AffordabilityRequest(BaseModel):
+    amount: Decimal = Field(..., gt=0)
+    name: Optional[str] = "Planned Purchase"
+    category: Optional[str] = "Shopping"
+
+
+class AffordabilityResponse(BaseModel):
+    verdict: str  # "SAFE" | "CAUTION" | "DANGER"
+    verdict_title: str
+    advice: str
+    hours_of_work: float
+    work_time_formatted: str
+    hourly_rate: Decimal
+    current_balance: Decimal
+    upcoming_bills: Decimal
+    discretionary_before: Decimal
+    discretionary_after: Decimal
+    daily_budget_before: Decimal
+    daily_budget_after: Decimal
+    days_remaining: int
+    goal_impact: Optional[str] = None
+
+
+@router.post("/can-i-afford", response_model=AffordabilityResponse)
+def check_affordability(
+    payload: AffordabilityRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    today = date.today()
+    _, days_in_month = calendar.monthrange(today.year, today.month)
+    days_remaining = max(1, days_in_month - today.day + 1)
+
+    # 1. Total Cumulative Balance
+    all_income = (
+        db.query(func.sum(Transaction.amount))
+        .filter(Transaction.user_id == current_user.id, Transaction.type == "income")
+        .scalar()
+        or Decimal("0.00")
+    )
+    all_expense = (
+        db.query(func.sum(Transaction.amount))
+        .filter(Transaction.user_id == current_user.id, Transaction.type == "expense")
+        .scalar()
+        or Decimal("0.00")
+    )
+    current_balance = Decimal(str(all_income)) - Decimal(str(all_expense))
+
+    # 2. Upcoming Active Recurring Bills for remainder of this month
+    recurring_items = (
+        db.query(RecurringPayment)
+        .filter(
+            RecurringPayment.user_id == current_user.id,
+            RecurringPayment.status == "active",
+        )
+        .all()
+    )
+    upcoming_bills = Decimal("0.00")
+    for r in recurring_items:
+        # Check if next_payment_date falls in remainder of current month
+        if r.next_payment_date >= today and r.next_payment_date.month == today.month and r.next_payment_date.year == today.year:
+            upcoming_bills += r.amount
+
+    # 3. Monthly Income & Hourly Rate calculation
+    # Standard work hours: 160 hours / month (40 hrs/wk * 4)
+    m_income = (
+        db.query(func.sum(Transaction.amount))
+        .filter(
+            Transaction.user_id == current_user.id,
+            Transaction.type == "income",
+            extract("month", Transaction.transaction_date) == today.month,
+            extract("year", Transaction.transaction_date) == today.year,
+        )
+        .scalar()
+        or Decimal("0.00")
+    )
+    monthly_income = Decimal(str(m_income))
+    if monthly_income <= 0:
+        # Fallback to last 60 days average or baseline 50,000 INR
+        monthly_income = Decimal("60000.00")
+
+    hourly_rate = round(monthly_income / Decimal("160.0"), 2)
+    hours_of_work = float(round(payload.amount / hourly_rate, 1))
+
+    # Format work time (e.g., "4.5 hrs" or "2 days 3 hrs")
+    if hours_of_work < 8:
+        work_time_formatted = f"{hours_of_work} hours of work"
+    else:
+        days_work = int(hours_of_work // 8)
+        rem_hrs = round(hours_of_work % 8, 1)
+        work_time_formatted = f"{days_work} working day{'s' if days_work > 1 else ''} and {rem_hrs} hrs"
+
+    # 4. Discretionary Capital & Daily Budgeting
+    discretionary_before = max(Decimal("0.00"), current_balance - upcoming_bills)
+    discretionary_after = discretionary_before - payload.amount
+
+    daily_before = round(discretionary_before / Decimal(str(days_remaining)), 2)
+    daily_after = round(discretionary_after / Decimal(str(days_remaining)), 2) if discretionary_after > 0 else Decimal("0.00")
+
+    # 5. Impact on Savings Goals
+    active_goals = (
+        db.query(SavingsGoal)
+        .filter(
+            SavingsGoal.user_id == current_user.id,
+            SavingsGoal.current_amount < SavingsGoal.target_amount,
+        )
+        .order_by(SavingsGoal.target_date.asc())
+        .all()
+    )
+    goal_impact = None
+    if active_goals:
+        top_goal = active_goals[0]
+        rem_target = top_goal.target_amount - top_goal.current_amount
+        pct_of_goal = round(float((payload.amount / rem_target) * 100), 1) if rem_target > 0 else 0
+        if pct_of_goal >= 10:
+            goal_impact = f"This purchase equals {pct_of_goal}% of the remaining target for your '{top_goal.name}' goal."
+
+    # 6. Honest Verdict
+    if discretionary_after < 0:
+        shortfall = abs(discretionary_after)
+        verdict = "DANGER"
+        verdict_title = "Unsafe — Cuts into essential obligations"
+        advice = (
+            f"This purchase will cause a ₹{shortfall:,.2f} deficit against your upcoming scheduled bills "
+            f"(such as rent and subscriptions totaling ₹{upcoming_bills:,.2f}). We recommend postponing this purchase."
+        )
+    elif daily_after < Decimal("250.00") or (daily_before > 0 and (daily_after / daily_before) < Decimal("0.4")):
+        verdict = "CAUTION"
+        verdict_title = "Tight — Compresses remaining daily budget"
+        advice = (
+            f"You can technically cover this, but it drops your safe daily allowance for the next "
+            f"{days_remaining} days from ₹{daily_before:,.2f}/day to ₹{daily_after:,.2f}/day. Try waiting 48 hours to see if you still need it."
+        )
+    else:
+        verdict = "SAFE"
+        verdict_title = "Safe — Zero disruption to bills or savings"
+        advice = (
+            f"All upcoming obligations (₹{upcoming_bills:,.2f}) remain fully funded. "
+            f"You will still have a healthy allowance of ₹{daily_after:,.2f}/day for the remaining {days_remaining} days of the month."
+        )
+
+    return AffordabilityResponse(
+        verdict=verdict,
+        verdict_title=verdict_title,
+        advice=advice,
+        hours_of_work=hours_of_work,
+        work_time_formatted=work_time_formatted,
+        hourly_rate=hourly_rate,
+        current_balance=current_balance,
+        upcoming_bills=upcoming_bills,
+        discretionary_before=discretionary_before,
+        discretionary_after=discretionary_after,
+        daily_budget_before=daily_before,
+        daily_budget_after=daily_after,
+        days_remaining=days_remaining,
+        goal_impact=goal_impact,
+    )

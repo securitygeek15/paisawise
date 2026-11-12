@@ -14,6 +14,7 @@ import {
   Calendar,
   ChevronRight,
   Sparkles,
+  HelpCircle,
 } from "lucide-react";
 import {
   AreaChart,
@@ -29,12 +30,14 @@ interface OverviewViewProps {
   onNavigate: (tab: NavTab) => void;
   onOpenNewTx: () => void;
   onOpenAssistant: () => void;
+  onOpenCanIAfford: () => void;
 }
 
 export function OverviewView({
   onNavigate,
   onOpenNewTx,
   onOpenAssistant,
+  onOpenCanIAfford,
 }: OverviewViewProps) {
   const { user } = useAuth();
   const [data, setData] = useState<OverviewData | null>(null);
@@ -137,6 +140,14 @@ export function OverviewView({
           </div>
 
           <button
+            onClick={onOpenCanIAfford}
+            className="flex items-center gap-1.5 rounded-md border border-[#171717] bg-white px-3 py-1.5 text-xs font-medium text-[#171717] hover:bg-[#F4F4F4] transition-colors"
+          >
+            <HelpCircle className="h-3.5 w-3.5" />
+            <span>Can I Afford This?</span>
+          </button>
+
+          <button
             onClick={onOpenNewTx}
             className="flex items-center gap-1.5 rounded-md bg-[#171717] px-3 py-1.5 text-xs font-medium text-white hover:bg-neutral-800 transition-colors"
           >
@@ -227,6 +238,29 @@ export function OverviewView({
             Retained surplus after expenses
           </p>
         </div>
+      </div>
+
+      {/* Impulse Buy Simulator: Can I Afford It? */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-lg border border-[#EAEAEA] bg-white p-4 shadow-2xs hover:border-[#171717] transition-colors">
+        <div className="flex items-center gap-3">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#171717] text-white">
+            <HelpCircle className="h-5 w-5" />
+          </div>
+          <div>
+            <h3 className="text-xs font-semibold text-[#171717]">
+              Impulse Buy Simulator: &quot;Can I Afford This?&quot;
+            </h3>
+            <p className="text-[11px] text-[#737373]">
+              Simulate purchase impact against upcoming rent, scheduled bills, remaining daily allowance, and working hours.
+            </p>
+          </div>
+        </div>
+        <button
+          onClick={onOpenCanIAfford}
+          className="shrink-0 rounded-md bg-[#171717] px-3.5 py-1.5 text-xs font-medium text-white hover:bg-neutral-800 transition-colors self-start sm:self-auto"
+        >
+          Check A Purchase &rarr;
+        </button>
       </div>
 
       {/* 3. Spending Trends Chart */}

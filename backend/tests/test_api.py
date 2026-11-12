@@ -173,3 +173,25 @@ def test_analytics_and_export():
     json_res = client.get("/api/settings/export/summary-json", headers=headers)
     assert json_res.status_code == 200
     assert json_res.json()["transactions_count"] > 0
+
+    # Affordability check test
+    afford_res = client.post("/api/analytics/can-i-afford", json={
+        "amount": "1200.00",
+        "name": "Noise Cancelling Headphones",
+        "category": "Shopping"
+    }, headers=headers)
+    assert afford_res.status_code == 200
+    data = afford_res.json()
+    assert "verdict" in data
+    assert data["hours_of_work"] > 0
+    assert "work_time_formatted" in data
+    assert "discretionary_before" in data
+
+    # Test extreme amount triggers DANGER
+    extreme_res = client.post("/api/analytics/can-i-afford", json={
+        "amount": "9999999.00",
+        "name": "Luxury Sports Car",
+        "category": "Vehicles"
+    }, headers=headers)
+    assert extreme_res.status_code == 200
+    assert extreme_res.json()["verdict"] == "DANGER"
