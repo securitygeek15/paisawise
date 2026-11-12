@@ -19,6 +19,8 @@ import {
   ArrowRight,
   ShieldCheck,
   Tag,
+  Pencil,
+  Check,
 } from "lucide-react";
 import {
   ResponsiveContainer,
@@ -37,6 +39,10 @@ interface CanIAffordModalProps {
 
 const QUICK_TEST_PRODUCTS = [
   {
+    label: "Hero Passion Bike (Flipkart)",
+    url: "https://www.flipkart.com/hero-new-passion-booking-ex-showroom-price/p/itm88a44bac3e13c",
+  },
+  {
     label: "Sony XM5 (Amazon)",
     url: "https://www.amazon.in/Sony-WH-1000XM5-Wireless-Cancelling-Headphones/dp/B09XS7JWHH",
   },
@@ -52,10 +58,6 @@ const QUICK_TEST_PRODUCTS = [
     label: "Nike Air Force 1 (Myntra)",
     url: "https://www.myntra.com/casual-shoes/nike/nike-men-white-air-force-1-07-sneakers/13812836/buy",
   },
-  {
-    label: "Kindle Paperwhite (Amazon)",
-    url: "https://www.amazon.in/Kindle-Paperwhite-adjustable-battery-Black/dp/B08N3TCP2F",
-  },
 ];
 
 export function CanIAffordModal({
@@ -69,14 +71,21 @@ export function CanIAffordModal({
   const [data, setData] = useState<PriceCheckResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [alertSet, setAlertSet] = useState(false);
+  const [isEditingPrice, setIsEditingPrice] = useState(false);
+  const [manualPrice, setManualPrice] = useState("");
 
   const currency = user?.currency || "INR";
 
-  const analyzeProduct = async (productUrl: string, name?: string) => {
+  const analyzeProduct = async (
+    productUrl: string,
+    name?: string,
+    overridePrice?: number | null
+  ) => {
     if (!productUrl.trim()) return;
 
     setLoading(true);
     setAlertSet(false);
+    setIsEditingPrice(false);
     try {
       const res = await apiRequest<PriceCheckResponse>(
         "/api/analytics/price-check",
@@ -85,10 +94,12 @@ export function CanIAffordModal({
           body: JSON.stringify({
             url: productUrl.trim(),
             custom_name: name?.trim() || null,
+            override_price: overridePrice ?? null,
           }),
         }
       );
       setData(res);
+      setManualPrice(String(res.current_price));
     } catch (err) {
       console.error("Price check failed", err);
     } finally {
@@ -109,9 +120,17 @@ export function CanIAffordModal({
     analyzeProduct(url, customName);
   };
 
+  const handleApplyManualPrice = () => {
+    const num = parseFloat(manualPrice);
+    if (!isNaN(num) && num > 0) {
+      analyzeProduct(url, customName, num);
+    }
+  };
+
   const handleSelectQuick = (testUrl: string) => {
     setUrl(testUrl);
     setCustomName("");
+    setManualPrice("");
     analyzeProduct(testUrl);
   };
 
@@ -216,11 +235,50 @@ export function CanIAffordModal({
                 </div>
 
                 <div className="text-right shrink-0 font-mono">
-                  <p className="text-lg font-bold text-[#171717]">
-                    {formatCurrency(data.current_price, currency)}
-                  </p>
+                  {isEditingPrice ? (
+                    <div className="flex items-center gap-1.5 justify-end">
+                      <span className="text-xs text-[#737373]">₹</span>
+                      <input
+                        type="number"
+                        value={manualPrice}
+                        onChange={(e) => setManualPrice(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            handleApplyManualPrice();
+                          }
+                        }}
+                        className="w-24 rounded border border-[#171717] bg-white px-2 py-0.5 text-right font-mono text-xs font-bold text-[#171717] focus:outline-none"
+                        autoFocus
+                      />
+                      <button
+                        type="button"
+                        onClick={handleApplyManualPrice}
+                        className="rounded bg-[#171717] px-2 py-1 text-[10px] text-white hover:bg-neutral-800 transition-colors"
+                      >
+                        <Check className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-end gap-1.5">
+                      <p className="text-lg font-bold text-[#171717]">
+                        {formatCurrency(data.current_price, currency)}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setManualPrice(String(data.current_price));
+                          setIsEditingPrice(true);
+                        }}
+                        title="Adjust price manually"
+                        className="rounded p-1 text-[#A3A3A3] hover:text-[#171717] hover:bg-[#F4F4F4] transition-colors"
+                      >
+                        <Pencil className="h-3 w-3" />
+                      </button>
+                    </div>
+                  )}
                   {data.discount_from_high > 0 && (
-                    <span className="text-[10px] text-emerald-700 bg-emerald-50 border border-emerald-200 px-1 rounded">
+                    <span className="inline-block mt-0.5 text-[10px] text-emerald-700 bg-emerald-50 border border-emerald-200 px-1 rounded">
                       {data.discount_from_high}% off peak
                     </span>
                   )}

@@ -564,6 +564,7 @@ def check_affordability(
 class PriceCheckRequest(BaseModel):
     url: str = Field(..., min_length=3)
     custom_name: Optional[str] = None
+    override_price: Optional[Decimal] = None
 
 
 class PriceHistoryPoint(BaseModel):
@@ -603,7 +604,11 @@ def check_product_price_and_timing(
     db: Session = Depends(get_db),
 ):
     # 1. Price history & timing analysis via Price Oracle
-    product_data = analyze_product_url(payload.url, payload.custom_name)
+    product_data = analyze_product_url(
+        payload.url,
+        custom_name=payload.custom_name,
+        override_price=payload.override_price,
+    )
 
     # 2. Personal finance affordability evaluation
     today = date.today()
