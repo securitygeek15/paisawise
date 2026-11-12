@@ -16,9 +16,22 @@
 
 ---
 
+## Highlight Feature: Smart Buy & Price History Oracle
+
+PaisaWise includes a built-in decision engine that bridges e-commerce shopping with personal financial reality:
+
+- Product Link Analysis: Paste any product URL from Amazon, Flipkart, or Myntra directly into the app.
+- Live Price Extraction: Automatically parses live ex-showroom/product pricing, title, and platform metadata via real-time Schema.org JSON-LD extraction.
+- 6-Month Price History: Visualizes historical price fluctuations, tracking all-time lows, averages, and peak pricing to verify if a sale discount is genuine.
+- Market Timing Verdict: Classifies current pricing as Optimal (near all-time low), Overpriced (wait for next sale), or Fair Value.
+- Personal Reality Check: Calculates the purchase price in actual hours of work based on your net income, and computes your remaining safe daily spending allowance while keeping upcoming recurring bills protected.
+- Manual Adjustment: Allows manual price tuning to account for specific variants, accessories, or regional on-road fees.
+
+---
+
 ## Main Features
 
-- Smart Buy & Price History Oracle: Paste any product link from Amazon, Flipkart, or Myntra to inspect 6-month historical price curves, detect fake sale discounts vs. all-time record lows, and verify personal cashflow affordability before purchasing.
+- Smart Buy & Price History Oracle: Evaluate product URLs against real historical trends and personal cashflow.
 - Overview Dashboard: Centralized view of total balance, monthly income, expenses, net savings, daily spending trends, and calculated financial insights.
 - Transactions Management: Add, edit, delete, search, filter by category/type/date, and sort financial records.
 - Category Budgets: Set monthly spending caps by category with visual warnings when nearing or exceeding limits.
