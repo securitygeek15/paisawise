@@ -163,6 +163,15 @@ def test_analytics_and_export():
     assert "total_balance" in ov["summary"]
     assert len(ov["insights"]) > 0
 
+    # Deep Analytics test for all range filters
+    for r_filter in ["month", "quarter", "year"]:
+        deep_res = client.get(f"/api/analytics/deep?range={r_filter}", headers=headers)
+        assert deep_res.status_code == 200
+        d_json = deep_res.json()
+        assert d_json["range"] == r_filter
+        assert "monthly_history" in d_json
+        assert len(d_json["monthly_history"]) == 12
+
     # CSV Export
     csv_res = client.get("/api/settings/export/csv", headers=headers)
     assert csv_res.status_code == 200

@@ -13,6 +13,8 @@ from app.auth import get_current_user
 
 router = APIRouter(prefix="/api/assistant", tags=["assistant"])
 
+# Ollama is OFF by default. Users can optionally enable it via ENABLE_OLLAMA=true
+ENABLE_OLLAMA = os.getenv("ENABLE_OLLAMA", "false").lower() in ("true", "1", "yes")
 OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://localhost:11434")
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3.2")
 
@@ -27,61 +29,56 @@ class AssistantResponse(BaseModel):
     data_context: Optional[Dict[str, Any]] = None
 
 
-def check_ollama_status() -> Dict[str, Any]:
-    """Checks if a local Ollama instance is active on the machine."""
-    try:
-        with httpx.Client(timeout=0.6) as client:
-            resp = client.get(f"{OLLAMA_HOST}/api/tags")
-            if resp.status_code == 200:
-                data = resp.json()
-                models = [m.get("name") for m in data.get("models", [])]
-                active_model = OLLAMA_MODEL if OLLAMA_MODEL in models else (models[0] if models else OLLAMA_MODEL)
-                return {"available": True, "model": active_model, "models": models}
-    except Exception:
-        pass
-    return {"available": False, "model": "builtin-local-engine", "models": []}
-
-
 @router.get("/engine-status")
 def get_engine_status():
-    ollama_info = check_ollama_status()
-    if ollama_info["available"]:
-        return {
-            "mode": "local_llm",
-            "name": f"Ollama ({ollama_info['model']})",
-            "is_local": True,
-            "description": "Running 100% locally on your machine via Ollama.",
-            "available_models": ollama_info["models"],
-        }
+    if ENABLE_OLLAMA:
+        try:
+            with httpx.Client(timeout=1.0) as client:
+                resp = client.get(f"{OLLAMA_HOST}/api/tags")
+                if resp.status_code == 200:
+                    data = resp.json()
+                    models = [m.get("name") for m in data.get("models", [])]
+                    active_model = OLLAMA_MODEL if OLLAMA_MODEL in models else (models[0] if models else OLLAMA_MODEL)
+                    return {
+                        "mode": "ollama",
+                        "name": f"Ollama ({active_model})",
+                        "is_local": True,
+                        "description": "Connected to local Ollama runner on your machine.",
+                        "available_models": models,
+                    }
+        except Exception:
+            pass
+
     return {
         "mode": "builtin_local",
-        "name": "Built-in Local Finance Engine",
+        "name": "Built-in Local Assistant",
         "is_local": True,
-        "description": "Running 100% on-device with verified SQL calculations. Zero cloud dependencies.",
+        "description": "Running 100% locally with deterministic financial calculations. Zero setup required.",
         "available_models": [],
     }
 
 
-def query_local_ollama(prompt: str, system_context: str, model_name: str) -> Optional[str]:
-    """Runs inference against local Ollama running on user's machine."""
+def query_optional_ollama(prompt: str, system_context: str) -> Optional[str]:
+    """Only invoked if user explicitly configured ENABLE_OLLAMA=true."""
+    if not ENABLE_OLLAMA:
+        return None
     try:
         full_system = (
             "You are PaisaWise AI, a local, privacy-first personal finance assistant. "
             "You answer questions ONLY using the user's verified financial data provided below. "
-            "Never invent or hallucinate financial transactions. Keep answers concise, factual, and minimal.\n\n"
+            "Never invent transactions. Keep answers concise, factual, and minimal.\n\n"
             f"User Financial Records:\n{system_context}"
         )
         payload = {
-            "model": model_name,
+            "model": OLLAMA_MODEL,
             "prompt": prompt,
             "system": full_system,
             "stream": False,
         }
-        with httpx.Client(timeout=12.0) as client:
+        with httpx.Client(timeout=10.0) as client:
             resp = client.post(f"{OLLAMA_HOST}/api/generate", json=payload)
             if resp.status_code == 200:
-                result = resp.json()
-                return result.get("response", "").strip()
+                return resp.json().get("response", "").strip()
     except Exception:
         pass
     return None
@@ -96,7 +93,7 @@ def ask_assistant(
     query = payload.query.lower().strip()
     today = date.today()
 
-    # 1. Gather verified local user financial context
+    # 1. Fetch user's actual database records
     month_txs = (
         db.query(Transaction)
         .filter(
@@ -127,35 +124,31 @@ def ask_assistant(
 
     goals = db.query(SavingsGoal).filter(SavingsGoal.user_id == current_user.id).all()
 
-    # Format context string for local inference
-    context_lines = [
-        f"Month: {today.strftime('%B %Y')}",
-        f"Monthly Income: ₹{monthly_income:,.2f}",
-        f"Monthly Expenses: ₹{monthly_expense:,.2f}",
-        f"Net Savings: ₹{(monthly_income - monthly_expense):,.2f}",
-        f"Expense Categories: {', '.join([f'{c}: ₹{a:,.2f}' for c, a in cat_expenses.items()]) or 'None'}",
-        f"Active Budgets: {', '.join([f'{b.category}: limit ₹{b.amount:,.2f}' for b in budgets]) or 'None'}",
-        f"Savings Goals: {', '.join([f'{g.name}: ₹{g.current_amount:,.2f} of ₹{g.target_amount:,.2f}' for g in goals]) or 'None'}",
-    ]
-    financial_context = "\n".join(context_lines)
-
-    # 2. Check if local Ollama model is available
-    ollama_info = check_ollama_status()
-    if ollama_info["available"]:
-        llm_reply = query_local_ollama(payload.query, financial_context, ollama_info["model"])
-        if llm_reply:
+    # 2. Check if user explicitly enabled Ollama
+    if ENABLE_OLLAMA:
+        context_str = (
+            f"Month: {today.strftime('%B %Y')}\n"
+            f"Monthly Income: ₹{monthly_income:,.2f}\n"
+            f"Monthly Expenses: ₹{monthly_expense:,.2f}\n"
+            f"Net Savings: ₹{(monthly_income - monthly_expense):,.2f}\n"
+            f"Expenses by Category: {', '.join([f'{c}: ₹{a:,.2f}' for c, a in cat_expenses.items()]) or 'None'}\n"
+            f"Budgets: {', '.join([f'{b.category}: limit ₹{b.amount:,.2f}' for b in budgets]) or 'None'}\n"
+            f"Savings Goals: {', '.join([f'{g.name}: ₹{g.current_amount:,.2f} of ₹{g.target_amount:,.2f}' for g in goals]) or 'None'}"
+        )
+        ollama_reply = query_optional_ollama(payload.query, context_str)
+        if ollama_reply:
             return AssistantResponse(
-                reply=llm_reply,
-                engine=f"Local LLM ({ollama_info['model']})",
+                reply=ollama_reply,
+                engine=f"Local Ollama ({OLLAMA_MODEL})",
                 data_context={"income": float(monthly_income), "expenses": float(monthly_expense)},
             )
 
-    # 3. Fallback: Local Deterministic Financial NLP Engine (100% on-device, instant, zero dependencies)
+    # 3. Built-in Local Finance Engine (Default — 100% on-device, instant, zero external calls)
     if any(k in query for k in ["where did my money go", "where did most", "top expense", "most spent", "highest spend", "spend most"]):
         if not cat_expenses:
             return AssistantResponse(
                 reply="You haven't recorded any expenses for this month yet. Add your transactions to start tracking spending categories.",
-                engine="Local Built-in Engine",
+                engine="Built-in Local Assistant",
             )
         sorted_cats = sorted(cat_expenses.items(), key=lambda x: x[1], reverse=True)
         top_cat, top_amt = sorted_cats[0]
@@ -166,7 +159,7 @@ def ask_assistant(
                 f"Most of your money this month went towards **{top_cat}**, totaling ₹{top_amt:,.2f} ({pct}% of all expenses).\n\n"
                 f"Your top spending categories are: {details}."
             ),
-            engine="Local Built-in Engine",
+            engine="Built-in Local Assistant",
             data_context={"top_category": top_cat, "amount": float(top_amt), "breakdown": {c: float(a) for c, a in sorted_cats[:5]}}
         )
 
@@ -181,7 +174,7 @@ def ask_assistant(
                 f"• **Net Savings:** ₹{savings:,.2f} ({savings_rate}% savings rate)\n"
                 f"• **Transactions Recorded:** {len(month_txs)}"
             ),
-            engine="Local Built-in Engine",
+            engine="Built-in Local Assistant",
             data_context={
                 "income": float(monthly_income),
                 "expenses": float(monthly_expense),
@@ -194,7 +187,7 @@ def ask_assistant(
         if not budgets:
             return AssistantResponse(
                 reply="You don't have any budgets configured for this month. Head to the Budgets tab to allocate spending limits.",
-                engine="Local Built-in Engine",
+                engine="Built-in Local Assistant",
             )
         over_budget = []
         close_to_budget = []
@@ -213,13 +206,13 @@ def ask_assistant(
         else:
             reply = f"Great financial discipline. All {len(budgets)} of your monthly budgets are currently within healthy limits."
 
-        return AssistantResponse(reply=reply, engine="Local Built-in Engine")
+        return AssistantResponse(reply=reply, engine="Built-in Local Assistant")
 
     elif any(k in query for k in ["save", "savings goal", "emergency fund", "goals"]):
         if not goals:
             return AssistantResponse(
                 reply="You haven't set up any savings goals yet. Create one in the Savings tab to track progress.",
-                engine="Local Built-in Engine",
+                engine="Built-in Local Assistant",
             )
         goals_text = "\n".join([
             f"• **{g.name}**: ₹{g.current_amount:,.2f} / ₹{g.target_amount:,.2f} ({round(float(g.current_amount/g.target_amount*100), 1) if g.target_amount > 0 else 0}%)"
@@ -227,7 +220,7 @@ def ask_assistant(
         ])
         return AssistantResponse(
             reply=f"Here is your current savings goal progress:\n\n{goals_text}",
-            engine="Local Built-in Engine",
+            engine="Built-in Local Assistant",
         )
 
     # Dynamic category queries e.g. "how much did i spend on food"
@@ -236,7 +229,7 @@ def ask_assistant(
             spent = cat_expenses[cat]
             return AssistantResponse(
                 reply=f"You have spent **₹{spent:,.2f}** on **{cat}** this month.",
-                engine="Local Built-in Engine",
+                engine="Built-in Local Assistant",
                 data_context={"category": cat, "spent": float(spent)},
             )
 
@@ -250,5 +243,5 @@ def ask_assistant(
             f"• *'What is my savings progress?'*\n"
             f"• *'How much did I spend on Food?'*"
         ),
-        engine="Local Built-in Engine",
+        engine="Built-in Local Assistant",
     )

@@ -39,7 +39,7 @@ PaisaWise includes a built-in decision engine that bridges e-commerce shopping w
 - Recurring Payments: Monitor recurring subscriptions with normalized monthly expenditure estimates.
 - Insights & Analytics: View cash flow trends, category-wise breakdowns, daily average expenditure, and savings rate.
 - Data Export: Export transactions to CSV or download a complete system backup as JSON.
-- 100% Local AI Financial Assistant: Runs entirely on your machine. Automatically pairs with local Ollama (e.g. llama3.2, mistral) or uses the built-in deterministic analytics engine with zero cloud accounts, external API keys, or data sharing.
+- 100% Local AI Financial Assistant: Runs entirely on your machine using the built-in deterministic analytics engine. Zero cloud accounts, external API keys, or data sharing. Optional: users can connect a local Ollama model if desired (ENABLE_OLLAMA=true).
 
 ## How to Run
 

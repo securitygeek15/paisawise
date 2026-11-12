@@ -368,10 +368,10 @@ export function SettingsView() {
           <div className="p-3 rounded border border-[#EAEAEA] bg-[#FAFAFA]">
             <p className="text-[10px] uppercase font-mono text-[#737373]">Active Inference</p>
             <p className="text-xs font-semibold text-[#171717] mt-0.5">
-              Ollama / Local Built-in Engine
+              Built-in Local Engine
             </p>
             <p className="text-[10px] text-[#A3A3A3] mt-1">
-              Supports local LLMs (llama3.2, mistral, phi3) or instant on-device deterministic analytics.
+              Deterministic calculations with zero dependencies. Optionally set ENABLE_OLLAMA=true to attach Ollama.
             </p>
           </div>
 

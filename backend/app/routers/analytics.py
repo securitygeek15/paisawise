@@ -306,7 +306,7 @@ def get_overview(
 
 @router.get("/deep")
 def get_deep_analytics(
-    range: str = Query("month", pattern="^(month|quarter|year)$"),
+    time_range: str = Query("month", alias="range", pattern="^(month|quarter|year)$"),
     month: Optional[int] = None,
     year: Optional[int] = None,
     current_user: User = Depends(get_current_user),
@@ -316,11 +316,11 @@ def get_deep_analytics(
     sel_month = month or today.month
     sel_year = year or today.year
 
-    if range == "month":
+    if time_range == "month":
         start_date = date(sel_year, sel_month, 1)
         _, last_day = calendar.monthrange(sel_year, sel_month)
         end_date = date(sel_year, sel_month, last_day)
-    elif range == "quarter":
+    elif time_range == "quarter":
         q_start_month = ((sel_month - 1) // 3) * 3 + 1
         start_date = date(sel_year, q_start_month, 1)
         q_end_month = q_start_month + 2
@@ -389,7 +389,7 @@ def get_deep_analytics(
     avg_daily_expense = round(total_expense / Decimal(str(days_count)), 2)
 
     return {
-        "range": range,
+        "range": time_range,
         "start_date": start_date,
         "end_date": end_date,
         "total_income": total_income,
