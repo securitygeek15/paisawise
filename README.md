@@ -1,6 +1,20 @@
-# PaisaWise
+<div align="center">
+  <img src="logo.svg" width="68" height="68" alt="PaisaWise Logo" />
+  <h1>PaisaWise</h1>
+  <p>Minimalist personal finance management platform.</p>
 
-A minimalist personal finance management platform designed to help track income and expenses, set monthly budgets, manage recurring subscriptions, monitor savings goals, and view financial analytics.
+  <p>
+    <img src="https://img.shields.io/badge/Next.js-16-171717?style=flat-square&logo=next.js&logoColor=white" alt="Next.js" />
+    <img src="https://img.shields.io/badge/TypeScript-5.0-171717?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript" />
+    <img src="https://img.shields.io/badge/Tailwind_CSS-4.0-171717?style=flat-square&logo=tailwindcss&logoColor=white" alt="Tailwind CSS" />
+    <img src="https://img.shields.io/badge/FastAPI-0.115-171717?style=flat-square&logo=fastapi&logoColor=white" alt="FastAPI" />
+    <img src="https://img.shields.io/badge/Python-3.13-171717?style=flat-square&logo=python&logoColor=white" alt="Python" />
+    <img src="https://img.shields.io/badge/Docker-Enabled-171717?style=flat-square&logo=docker&logoColor=white" alt="Docker" />
+    <img src="https://img.shields.io/badge/License-MIT-171717?style=flat-square" alt="License" />
+  </p>
+</div>
+
+---
 
 ## Main Features
 
@@ -25,7 +39,7 @@ docker compose up --build
 
 - Frontend: http://localhost:3000
 - Backend API: http://localhost:8000
-- API Docs: http://localhost:8000/docs
+- API Documentation: http://localhost:8000/docs
 
 ---
 
