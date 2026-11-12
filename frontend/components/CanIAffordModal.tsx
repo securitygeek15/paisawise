@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { AffordabilityResponse } from "@/lib/types";
+import { PriceCheckResponse } from "@/lib/types";
 import { apiRequest } from "@/lib/api";
 import { formatCurrency } from "@/lib/utils";
 import { useAuth } from "@/lib/auth-context";
@@ -11,12 +11,23 @@ import {
   AlertTriangle,
   AlertCircle,
   Clock,
-  Calendar,
-  ShieldCheck,
   TrendingDown,
+  TrendingUp,
+  ExternalLink,
+  Search,
+  Bell,
   ArrowRight,
-  Sparkles,
+  ShieldCheck,
+  Tag,
 } from "lucide-react";
+import {
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+} from "recharts";
 
 interface CanIAffordModalProps {
   isOpen: boolean;
@@ -24,11 +35,27 @@ interface CanIAffordModalProps {
   onRecordExpense?: (name: string, amount: string) => void;
 }
 
-const PRESET_CHECKS = [
-  { label: "Dinner (₹850)", amount: "850", name: "Gourmet Dinner" },
-  { label: "Sneakers (₹4,500)", amount: "4500", name: "Running Sneakers" },
-  { label: "Gadget (₹24,900)", amount: "24900", name: "Tablet Upgrade" },
-  { label: "Vacation (₹85,000)", amount: "85000", name: "Bali Vacation" },
+const QUICK_TEST_PRODUCTS = [
+  {
+    label: "Sony XM5 (Amazon)",
+    url: "https://www.amazon.in/Sony-WH-1000XM5-Wireless-Cancelling-Headphones/dp/B09XS7JWHH",
+  },
+  {
+    label: "iPhone 15 (Flipkart)",
+    url: "https://www.flipkart.com/apple-iphone-15-black-128-gb/p/itm6ac6485515ae4",
+  },
+  {
+    label: "MacBook Air M2 (Amazon)",
+    url: "https://www.amazon.in/Apple-MacBook-Laptop-chip-Liquid/dp/B0B3B3W56W",
+  },
+  {
+    label: "Nike Air Force 1 (Myntra)",
+    url: "https://www.myntra.com/casual-shoes/nike/nike-men-white-air-force-1-07-sneakers/13812836/buy",
+  },
+  {
+    label: "Kindle Paperwhite (Amazon)",
+    url: "https://www.amazon.in/Kindle-Paperwhite-adjustable-battery-Black/dp/B08N3TCP2F",
+  },
 ];
 
 export function CanIAffordModal({
@@ -37,37 +64,33 @@ export function CanIAffordModal({
   onRecordExpense,
 }: CanIAffordModalProps) {
   const { user } = useAuth();
-  const [amount, setAmount] = useState("4500");
-  const [name, setName] = useState("Running Sneakers");
-  const [result, setResult] = useState<AffordabilityResponse | null>(null);
+  const [url, setUrl] = useState(QUICK_TEST_PRODUCTS[0].url);
+  const [customName, setCustomName] = useState("");
+  const [data, setData] = useState<PriceCheckResponse | null>(null);
   const [loading, setLoading] = useState(false);
-  const [copiedWishlist, setCopiedWishlist] = useState(false);
+  const [alertSet, setAlertSet] = useState(false);
 
   const currency = user?.currency || "INR";
 
-  const evaluateAffordability = async (testAmt: string, testName: string) => {
-    const parsed = parseFloat(testAmt);
-    if (isNaN(parsed) || parsed <= 0) {
-      setResult(null);
-      return;
-    }
+  const analyzeProduct = async (productUrl: string, name?: string) => {
+    if (!productUrl.trim()) return;
 
     setLoading(true);
+    setAlertSet(false);
     try {
-      const res = await apiRequest<AffordabilityResponse>(
-        "/api/analytics/can-i-afford",
+      const res = await apiRequest<PriceCheckResponse>(
+        "/api/analytics/price-check",
         {
           method: "POST",
           body: JSON.stringify({
-            amount: parsed.toFixed(2),
-            name: testName || "Planned Purchase",
-            category: "Shopping",
+            url: productUrl.trim(),
+            custom_name: name?.trim() || null,
           }),
         }
       );
-      setResult(res);
+      setData(res);
     } catch (err) {
-      console.error("Affordability check failed", err);
+      console.error("Price check failed", err);
     } finally {
       setLoading(false);
     }
@@ -75,43 +98,39 @@ export function CanIAffordModal({
 
   useEffect(() => {
     if (isOpen) {
-      evaluateAffordability(amount, name);
+      analyzeProduct(url);
     }
   }, [isOpen]);
 
-  // Debounced live calculation as user types amount
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (isOpen && amount) {
-        evaluateAffordability(amount, name);
-      }
-    }, 250);
-    return () => clearTimeout(timer);
-  }, [amount, name, isOpen]);
-
   if (!isOpen) return null;
 
-  const handlePreset = (presetAmt: string, presetName: string) => {
-    setAmount(presetAmt);
-    setName(presetName);
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    analyzeProduct(url, customName);
+  };
+
+  const handleSelectQuick = (testUrl: string) => {
+    setUrl(testUrl);
+    setCustomName("");
+    analyzeProduct(testUrl);
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
-      <div className="w-full max-w-lg rounded-xl border border-[#EAEAEA] bg-white p-6 shadow-2xl animate-in fade-in-50 zoom-in-95 duration-200 flex flex-col max-h-[90vh] overflow-y-auto">
+      <div className="w-full max-w-xl rounded-xl border border-[#EAEAEA] bg-white p-6 shadow-2xl animate-in fade-in-50 zoom-in-95 duration-200 flex flex-col max-h-[92vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-start justify-between border-b border-[#EAEAEA] pb-4">
           <div>
             <div className="flex items-center gap-2">
               <span className="flex h-6 w-6 items-center justify-center rounded-md bg-[#171717] text-white font-mono text-xs font-bold">
-                ?
+                P
               </span>
               <h2 className="text-base font-semibold tracking-tight text-[#171717]">
-                Can I Afford This?
+                Smart Buy & Price History Oracle
               </h2>
             </div>
             <p className="mt-0.5 text-xs text-[#737373]">
-              Simulate purchase impact against live balance, upcoming bills, and life energy.
+              Paste any product link from Amazon, Flipkart, or Myntra to check historical pricing and your personal financial readiness.
             </p>
           </div>
           <button
@@ -122,50 +141,41 @@ export function CanIAffordModal({
           </button>
         </div>
 
-        {/* Inputs */}
-        <div className="mt-4 space-y-3">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="block text-[11px] font-medium text-[#737373] mb-1">
-                Amount (₹)
-              </label>
-              <input
-                type="number"
-                step="0.01"
-                min="1"
-                autoFocus
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                placeholder="4500.00"
-                className="w-full rounded-md border border-[#EAEAEA] bg-[#FAFAFA] px-3 py-2 text-sm text-[#171717] font-mono focus:border-[#171717] focus:bg-white focus:outline-none transition-colors"
-              />
-            </div>
-            <div>
-              <label className="block text-[11px] font-medium text-[#737373] mb-1">
-                Item / Impulse Buy
-              </label>
+        {/* URL Input Form */}
+        <form onSubmit={handleSubmit} className="mt-4 space-y-2.5">
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-[#A3A3A3]" />
               <input
                 type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. Noise Cancelling Headphones"
-                className="w-full rounded-md border border-[#EAEAEA] bg-[#FAFAFA] px-3 py-2 text-xs text-[#171717] focus:border-[#171717] focus:bg-white focus:outline-none transition-colors"
+                required
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                placeholder="Paste Amazon, Flipkart, or Myntra product link..."
+                className="w-full rounded-md border border-[#EAEAEA] bg-[#FAFAFA] pl-8 pr-3 py-2 text-xs text-[#171717] focus:border-[#171717] focus:bg-white focus:outline-none transition-colors"
               />
             </div>
+            <button
+              type="submit"
+              disabled={loading}
+              className="rounded-md bg-[#171717] px-4 py-2 text-xs font-medium text-white hover:bg-neutral-800 disabled:opacity-50 transition-colors shrink-0"
+            >
+              {loading ? "Analyzing..." : "Analyze Price"}
+            </button>
           </div>
 
           {/* Quick preset chips */}
           <div className="flex flex-wrap items-center gap-1.5 pt-1">
             <span className="text-[10px] text-[#A3A3A3] uppercase tracking-wider font-mono mr-1">
-              Try:
+              Sample Links:
             </span>
-            {PRESET_CHECKS.map((p) => (
+            {QUICK_TEST_PRODUCTS.map((p) => (
               <button
-                key={p.amount}
+                key={p.label}
                 type="button"
-                onClick={() => handlePreset(p.amount, p.name)}
+                onClick={() => handleSelectQuick(p.url)}
                 className={`rounded-full border px-2.5 py-0.5 text-[11px] font-mono transition-colors ${
-                  amount === p.amount
+                  url === p.url
                     ? "border-[#171717] bg-[#171717] text-white"
                     : "border-[#EAEAEA] bg-[#FAFAFA] text-[#737373] hover:text-[#171717] hover:border-[#A3A3A3]"
                 }`}
@@ -174,149 +184,237 @@ export function CanIAffordModal({
               </button>
             ))}
           </div>
-        </div>
+        </form>
 
-        {/* Live Simulation Card */}
-        {result && (
+        {/* Results Section */}
+        {loading && (
+          <div className="py-12 flex flex-col items-center justify-center gap-2">
+            <div className="h-5 w-5 animate-spin rounded-full border-2 border-[#171717] border-t-transparent" />
+            <p className="text-xs text-[#737373]">
+              Digging through 6-month historical price records on {url.includes("flipkart") ? "Flipkart" : url.includes("myntra") ? "Myntra" : "Amazon"}...
+            </p>
+          </div>
+        )}
+
+        {!loading && data && (
           <div className="mt-5 space-y-4 pt-4 border-t border-[#EAEAEA] animate-in fade-in-50 duration-200">
-            {/* Verdict Badge */}
-            <div
-              className={`rounded-lg border p-4 ${
-                result.verdict === "SAFE"
-                  ? "border-emerald-200 bg-emerald-50/40 text-emerald-950"
-                  : result.verdict === "CAUTION"
-                  ? "border-amber-200 bg-amber-50/40 text-amber-950"
-                  : "border-red-200 bg-red-50/40 text-red-950"
-              }`}
-            >
-              <div className="flex items-start gap-2.5">
-                {result.verdict === "SAFE" && (
-                  <CheckCircle2 className="h-5 w-5 text-emerald-700 shrink-0 mt-0.5" />
-                )}
-                {result.verdict === "CAUTION" && (
-                  <AlertTriangle className="h-5 w-5 text-amber-700 shrink-0 mt-0.5" />
-                )}
-                {result.verdict === "DANGER" && (
-                  <AlertCircle className="h-5 w-5 text-red-700 shrink-0 mt-0.5" />
-                )}
+            {/* 1. Product Metadata Card */}
+            <div className="rounded-lg border border-[#EAEAEA] bg-[#FAFAFA] p-4">
+              <div className="flex items-start justify-between gap-3">
                 <div>
-                  <h3 className="text-xs font-bold uppercase tracking-wider font-mono">
-                    Verdict: {result.verdict} — {result.verdict_title}
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="rounded bg-[#171717] text-white text-[10px] font-mono px-2 py-0.5 uppercase tracking-wider font-semibold">
+                      {data.platform}
+                    </span>
+                    <span className="text-[11px] text-[#737373]">
+                      Price History Verified
+                    </span>
+                  </div>
+                  <h3 className="text-sm font-semibold text-[#171717] leading-snug">
+                    {data.product_name}
                   </h3>
-                  <p className="mt-1 text-xs leading-relaxed opacity-90">
-                    {result.advice}
+                </div>
+
+                <div className="text-right shrink-0 font-mono">
+                  <p className="text-lg font-bold text-[#171717]">
+                    {formatCurrency(data.current_price, currency)}
+                  </p>
+                  {data.discount_from_high > 0 && (
+                    <span className="text-[10px] text-emerald-700 bg-emerald-50 border border-emerald-200 px-1 rounded">
+                      {data.discount_from_high}% off peak
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* 3 Price Benchmark Stats */}
+              <div className="grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-[#EAEAEA] text-center font-mono">
+                <div>
+                  <p className="text-[10px] uppercase text-[#737373]">All-Time Low</p>
+                  <p className="text-xs font-bold text-emerald-800">
+                    {formatCurrency(data.all_time_low, currency)}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-[10px] uppercase text-[#737373]">Average Price</p>
+                  <p className="text-xs font-bold text-[#171717]">
+                    {formatCurrency(data.average_price, currency)}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-[10px] uppercase text-[#737373]">All-Time High</p>
+                  <p className="text-xs font-bold text-red-800">
+                    {formatCurrency(data.all_time_high, currency)}
                   </p>
                 </div>
               </div>
             </div>
 
-            {/* Core Reality Check Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {/* 1. Life Energy / Work Hours Cost */}
-              <div className="rounded-lg border border-[#EAEAEA] bg-[#FAFAFA] p-3.5 space-y-1">
-                <div className="flex items-center gap-1.5 text-[11px] text-[#737373]">
-                  <Clock className="h-3.5 w-3.5 text-[#171717]" />
-                  <span>Cost in Working Life</span>
+            {/* 2. Buy Timing Verdict Badge */}
+            <div
+              className={`rounded-lg border p-4 ${
+                data.timing_verdict === "BUY_NOW"
+                  ? "border-emerald-200 bg-emerald-50/50 text-emerald-950"
+                  : data.timing_verdict === "WAIT"
+                  ? "border-amber-200 bg-amber-50/50 text-amber-950"
+                  : "border-neutral-300 bg-neutral-50 text-neutral-900"
+              }`}
+            >
+              <div className="flex items-start gap-2.5">
+                {data.timing_verdict === "BUY_NOW" && (
+                  <CheckCircle2 className="h-5 w-5 text-emerald-700 shrink-0 mt-0.5" />
+                )}
+                {data.timing_verdict === "WAIT" && (
+                  <AlertTriangle className="h-5 w-5 text-amber-700 shrink-0 mt-0.5" />
+                )}
+                {data.timing_verdict === "FAIR" && (
+                  <Clock className="h-5 w-5 text-neutral-700 shrink-0 mt-0.5" />
+                )}
+                <div>
+                  <h4 className="text-xs font-bold uppercase tracking-wider font-mono">
+                    Market Timing: {data.timing_title}
+                  </h4>
+                  <p className="mt-1 text-xs leading-relaxed opacity-90">
+                    {data.timing_advice}
+                  </p>
                 </div>
-                <p className="text-base font-bold text-[#171717]">
-                  {result.work_time_formatted}
-                </p>
-                <p className="text-[10px] text-[#A3A3A3] font-mono">
-                  At your verified ~₹{result.hourly_rate}/hr rate
-                </p>
+              </div>
+            </div>
+
+            {/* 3. Price History Curve (6 Months Trend) */}
+            <div className="rounded-lg border border-[#EAEAEA] p-4 bg-white">
+              <div className="flex items-center justify-between mb-3 text-xs">
+                <span className="font-semibold text-[#171717]">
+                  6-Month Historical Price Fluctuation
+                </span>
+                <span className="text-[11px] font-mono text-[#737373]">
+                  All-Time Low: {formatCurrency(data.all_time_low, currency)}
+                </span>
+              </div>
+              <div className="h-36 w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={data.history_points} margin={{ top: 5, right: 10, left: -15, bottom: 0 }}>
+                    <XAxis
+                      dataKey="date"
+                      tickLine={false}
+                      axisLine={{ stroke: "#EAEAEA" }}
+                      tick={{ fontSize: 10, fill: "#737373" }}
+                    />
+                    <YAxis
+                      tickLine={false}
+                      axisLine={{ stroke: "#EAEAEA" }}
+                      tick={{ fontSize: 10, fill: "#737373" }}
+                      tickFormatter={(val) => (val >= 1000 ? `₹${val / 1000}k` : `₹${val}`)}
+                    />
+                    <Tooltip
+                      content={({ active, payload }) => {
+                        if (active && payload && payload.length) {
+                          const p = payload[0].payload;
+                          return (
+                            <div className="rounded border border-[#EAEAEA] bg-white p-2 shadow-xs text-xs font-mono">
+                              <p className="text-[#737373] text-[10px]">{p.date}</p>
+                              <p className="font-bold text-[#171717]">
+                                {formatCurrency(p.price, currency)}
+                              </p>
+                              {p.note && (
+                                <p className="text-[10px] text-emerald-700 font-sans mt-0.5">
+                                  {p.note}
+                                </p>
+                              )}
+                            </div>
+                          );
+                        }
+                        return null;
+                      }}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="price"
+                      stroke="#171717"
+                      strokeWidth={2}
+                      dot={{ r: 3, fill: "#171717" }}
+                      activeDot={{ r: 5 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            {/* 4. Personal Financial Impact (Life Hours & Safe Spend) */}
+            <div className="rounded-lg border border-[#EAEAEA] bg-[#FAFAFA] p-4 space-y-2.5">
+              <div className="flex items-center gap-1.5 text-xs font-semibold text-[#171717]">
+                <ShieldCheck className="h-4 w-4" />
+                <span>Your Personal Financial Reality Check</span>
               </div>
 
-              {/* 2. Daily Burn Rate Impact */}
-              <div className="rounded-lg border border-[#EAEAEA] bg-[#FAFAFA] p-3.5 space-y-1">
-                <div className="flex items-center gap-1.5 text-[11px] text-[#737373]">
-                  <TrendingDown className="h-3.5 w-3.5 text-[#171717]" />
-                  <span>Daily Allowance Impact</span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                <div className="p-2.5 rounded border border-[#EAEAEA] bg-white">
+                  <span className="text-[11px] text-[#737373]">Cost in Work Time:</span>
+                  <p className="text-sm font-bold text-[#171717] mt-0.5">
+                    {data.work_time_formatted}
+                  </p>
+                  <p className="text-[10px] text-[#A3A3A3] font-mono">
+                    Based on your ~₹{data.hourly_rate}/hr salary
+                  </p>
                 </div>
-                <div className="flex items-baseline gap-1.5 font-mono">
-                  <span className="text-xs text-[#737373] line-through">
-                    ₹{result.daily_budget_before}
-                  </span>
-                  <ArrowRight className="h-3 w-3 text-[#A3A3A3]" />
-                  <span
-                    className={`text-base font-bold ${
-                      result.verdict === "DANGER"
+
+                <div className="p-2.5 rounded border border-[#EAEAEA] bg-white">
+                  <span className="text-[11px] text-[#737373]">Daily Allowance After:</span>
+                  <p
+                    className={`text-sm font-bold mt-0.5 font-mono ${
+                      data.affordability_verdict === "DANGER"
                         ? "text-red-600"
-                        : result.verdict === "CAUTION"
-                        ? "text-amber-700"
                         : "text-[#171717]"
                     }`}
                   >
-                    ₹{result.daily_budget_after}
-                  </span>
-                  <span className="text-[10px] text-[#737373]">/ day</span>
+                    ₹{data.daily_budget_after} / day
+                  </p>
+                  <p className="text-[10px] text-[#A3A3A3]">
+                    Upcoming ₹{data.upcoming_bills} bills protected
+                  </p>
                 </div>
-                <p className="text-[10px] text-[#A3A3A3]">
-                  Across remaining {result.days_remaining} days of this month
-                </p>
               </div>
+
+              <p className="text-[11px] text-[#737373] leading-relaxed">
+                {data.affordability_advice}
+              </p>
             </div>
 
-            {/* 3. Protection Breakdown */}
-            <div className="rounded-md border border-[#EAEAEA] p-3 text-xs space-y-1.5 text-[#737373]">
-              <div className="flex items-center justify-between">
-                <span>Current Total Liquidity</span>
-                <span className="font-mono font-medium text-[#171717]">
-                  {formatCurrency(result.current_balance, currency)}
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span>Earmarked Upcoming Bills (Rent, SIPs)</span>
-                <span className="font-mono text-[#171717]">
-                  - {formatCurrency(result.upcoming_bills, currency)}
-                </span>
-              </div>
-              <div className="flex items-center justify-between border-t border-[#EAEAEA] pt-1.5 font-medium">
-                <span>Remaining Free Discretionary Buffer</span>
-                <span
-                  className={`font-mono ${
-                    Number(result.discretionary_after) < 0
-                      ? "text-red-600 font-bold"
-                      : "text-[#171717]"
-                  }`}
-                >
-                  {formatCurrency(result.discretionary_after, currency)}
-                </span>
-              </div>
-            </div>
-
-            {/* Goal Impact Callout */}
-            {result.goal_impact && (
-              <div className="flex items-center gap-2 rounded-md bg-[#F4F4F4] px-3 py-2 text-[11px] text-[#171717] border border-[#EAEAEA]">
-                <Sparkles className="h-3.5 w-3.5 text-[#171717] shrink-0" />
-                <span>{result.goal_impact}</span>
-              </div>
-            )}
-
-            {/* Next Steps Actions */}
-            <div className="flex flex-col sm:flex-row items-center justify-end gap-2 pt-2 border-t border-[#EAEAEA]">
+            {/* 5. Next Steps Actions */}
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-2 pt-2 border-t border-[#EAEAEA]">
               <button
                 type="button"
-                onClick={() => {
-                  setCopiedWishlist(true);
-                  setTimeout(() => setCopiedWishlist(false), 2000);
-                }}
-                className="w-full sm:w-auto rounded-md border border-[#EAEAEA] bg-white px-3 py-2 text-xs font-medium text-[#737373] hover:bg-[#F4F4F4] transition-colors"
+                onClick={() => setAlertSet(true)}
+                className="w-full sm:w-auto flex items-center justify-center gap-1.5 rounded-md border border-[#EAEAEA] bg-white px-3 py-2 text-xs font-medium text-[#737373] hover:bg-[#F4F4F4] transition-colors"
               >
-                {copiedWishlist ? "Saved to 48h Cool-off!" : "Add to 48-Hour Wishlist"}
+                <Bell className="h-3.5 w-3.5" />
+                <span>{alertSet ? "Price Drop Alert Set!" : "Set Price Drop Alert"}</span>
               </button>
 
-              {onRecordExpense && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    onRecordExpense(name, amount);
-                    onClose();
-                  }}
-                  className="w-full sm:w-auto rounded-md bg-[#171717] px-4 py-2 text-xs font-medium text-white hover:bg-neutral-800 transition-colors"
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <a
+                  href={url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-1 rounded-md border border-[#EAEAEA] bg-white px-3 py-2 text-xs font-medium text-[#171717] hover:bg-[#F4F4F4] transition-colors"
                 >
-                  Record as Expense Now &rarr;
-                </button>
-              )}
+                  <ExternalLink className="h-3.5 w-3.5" />
+                  <span>View on {data.platform}</span>
+                </a>
+
+                {onRecordExpense && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onRecordExpense(data.product_name, String(data.current_price));
+                      onClose();
+                    }}
+                    className="flex-1 sm:flex-none rounded-md bg-[#171717] px-4 py-2 text-xs font-medium text-white hover:bg-neutral-800 transition-colors"
+                  >
+                    Record as Expense &rarr;
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         )}

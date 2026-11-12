@@ -14,7 +14,7 @@ import {
   Calendar,
   ChevronRight,
   Sparkles,
-  HelpCircle,
+  Tag,
 } from "lucide-react";
 import {
   AreaChart,
@@ -143,8 +143,8 @@ export function OverviewView({
             onClick={onOpenCanIAfford}
             className="flex items-center gap-1.5 rounded-md border border-[#171717] bg-white px-3 py-1.5 text-xs font-medium text-[#171717] hover:bg-[#F4F4F4] transition-colors"
           >
-            <HelpCircle className="h-3.5 w-3.5" />
-            <span>Can I Afford This?</span>
+            <Tag className="h-3.5 w-3.5" />
+            <span>Price Oracle</span>
           </button>
 
           <button
@@ -240,18 +240,18 @@ export function OverviewView({
         </div>
       </div>
 
-      {/* Impulse Buy Simulator: Can I Afford It? */}
+      {/* Smart Buy & Price History Oracle */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-lg border border-[#EAEAEA] bg-white p-4 shadow-2xs hover:border-[#171717] transition-colors">
         <div className="flex items-center gap-3">
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#171717] text-white">
-            <HelpCircle className="h-5 w-5" />
+            <Tag className="h-5 w-5" />
           </div>
           <div>
             <h3 className="text-xs font-semibold text-[#171717]">
-              Impulse Buy Simulator: &quot;Can I Afford This?&quot;
+              Smart Buy &amp; Price History Oracle
             </h3>
             <p className="text-[11px] text-[#737373]">
-              Simulate purchase impact against upcoming rent, scheduled bills, remaining daily allowance, and working hours.
+              Paste any product link (Amazon, Flipkart, Myntra) to inspect historical sale dips, timing verdicts, and personal financial readiness.
             </p>
           </div>
         </div>
@@ -259,7 +259,7 @@ export function OverviewView({
           onClick={onOpenCanIAfford}
           className="shrink-0 rounded-md bg-[#171717] px-3.5 py-1.5 text-xs font-medium text-white hover:bg-neutral-800 transition-colors self-start sm:self-auto"
         >
-          Check A Purchase &rarr;
+          Check Product Price &rarr;
         </button>
       </div>
 

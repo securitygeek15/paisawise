@@ -18,7 +18,7 @@
 
 ## Main Features
 
-- "Can I Afford This?" (Impulse Buy Simulator): Live simulation evaluating planned purchases against upcoming rent, scheduled bills, remaining daily allowance, and cost in working hours.
+- Smart Buy & Price History Oracle: Paste any product link from Amazon, Flipkart, or Myntra to inspect 6-month historical price curves, detect fake sale discounts vs. all-time record lows, and verify personal cashflow affordability before purchasing.
 - Overview Dashboard: Centralized view of total balance, monthly income, expenses, net savings, daily spending trends, and calculated financial insights.
 - Transactions Management: Add, edit, delete, search, filter by category/type/date, and sort financial records.
 - Category Budgets: Set monthly spending caps by category with visual warnings when nearing or exceeding limits.

@@ -143,21 +143,34 @@ export interface DeepAnalyticsData {
   monthly_history: MonthlyHistoryItem[];
 }
 
-export interface AffordabilityResponse {
-  verdict: "SAFE" | "CAUTION" | "DANGER";
-  verdict_title: string;
-  advice: string;
+export interface PriceHistoryPoint {
+  date: string;
+  price: number;
+  note?: string | null;
+}
+
+export interface PriceCheckResponse {
+  platform: string;
+  product_name: string;
+  current_price: number | string;
+  all_time_low: number | string;
+  all_time_high: number | string;
+  average_price: number | string;
+  discount_from_high: number;
+  history_points: PriceHistoryPoint[];
+  timing_verdict: "BUY_NOW" | "WAIT" | "FAIR";
+  timing_title: string;
+  timing_advice: string;
+  affordability_verdict: "SAFE" | "CAUTION" | "DANGER";
+  affordability_advice: string;
   hours_of_work: number;
   work_time_formatted: string;
   hourly_rate: number | string;
   current_balance: number | string;
   upcoming_bills: number | string;
-  discretionary_before: number | string;
-  discretionary_after: number | string;
-  daily_budget_before: number | string;
   daily_budget_after: number | string;
   days_remaining: number;
-  goal_impact?: string | null;
 }
+
 
 

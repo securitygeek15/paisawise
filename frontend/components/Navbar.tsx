@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useAuth } from "@/lib/auth-context";
-import { Sparkles, Menu, HelpCircle } from "lucide-react";
+import { Sparkles, Menu, Tag } from "lucide-react";
 
 interface NavbarProps {
   onOpenMobileMenu: () => void;
@@ -36,10 +36,10 @@ export function Navbar({ onOpenMobileMenu, onOpenAssistant, onOpenNewTx, onOpenC
         <button
           onClick={onOpenCanIAfford}
           className="flex h-8 items-center gap-1 rounded-md border border-[#171717] bg-[#FAFAFA] px-2 text-xs font-medium text-[#171717] hover:bg-[#F4F4F4] transition-colors"
-          title="Can I Afford It?"
+          title="Price & Buy Oracle"
         >
-          <HelpCircle className="h-3.5 w-3.5" />
-          <span className="hidden sm:inline">Afford?</span>
+          <Tag className="h-3.5 w-3.5" />
+          <span className="hidden sm:inline">Price Oracle</span>
         </button>
 
         <button

@@ -15,7 +15,7 @@ import {
   X,
   LogOut,
   Plus,
-  HelpCircle,
+  Tag,
 } from "lucide-react";
 
 interface MobileDrawerProps {
@@ -104,8 +104,8 @@ export function MobileDrawer({
               }}
               className="flex items-center justify-center gap-2 rounded-md border border-[#171717] bg-[#FAFAFA] py-2 text-xs font-medium text-[#171717]"
             >
-              <HelpCircle className="h-3.5 w-3.5" />
-              <span>Can I Afford This?</span>
+              <Tag className="h-3.5 w-3.5" />
+              <span>Price History & Buy Oracle</span>
             </button>
             <button
               onClick={() => {

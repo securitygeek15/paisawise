@@ -14,7 +14,7 @@ import {
   Plus,
   LogOut,
   User as UserIcon,
-  HelpCircle,
+  Tag,
 } from "lucide-react";
 
 export type NavTab =
@@ -89,8 +89,8 @@ export function Sidebar({
             onClick={onOpenCanIAfford}
             className="w-full flex items-center justify-center gap-2 rounded-md border border-[#171717] bg-[#FAFAFA] py-1.5 px-3 text-xs font-medium text-[#171717] hover:bg-[#F4F4F4] transition-all"
           >
-            <HelpCircle className="h-3.5 w-3.5" />
-            <span>Can I Afford This?</span>
+            <Tag className="h-3.5 w-3.5" />
+            <span>Price & Buy Oracle</span>
           </button>
         </div>
 

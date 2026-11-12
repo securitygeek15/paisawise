@@ -195,3 +195,16 @@ def test_analytics_and_export():
     }, headers=headers)
     assert extreme_res.status_code == 200
     assert extreme_res.json()["verdict"] == "DANGER"
+
+    # Test Price Check Oracle
+    price_res = client.post("/api/analytics/price-check", json={
+        "url": "https://www.amazon.in/Sony-WH-1000XM5-Wireless-Cancelling-Headphones/dp/B09XS7JWHH"
+    }, headers=headers)
+    assert price_res.status_code == 200
+    pdata = price_res.json()
+    assert pdata["platform"] == "Amazon"
+    assert "Sony" in pdata["product_name"]
+    assert len(pdata["history_points"]) > 0
+    assert float(pdata["all_time_low"]) > 0
+    assert "timing_verdict" in pdata
+    assert "affordability_verdict" in pdata

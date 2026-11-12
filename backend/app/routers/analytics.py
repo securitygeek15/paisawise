@@ -8,6 +8,7 @@ from decimal import Decimal
 import calendar
 from app.database import get_db
 from app.models import Transaction, Budget, User, SavingsGoal, RecurringPayment
+from app.price_oracle import analyze_product_url
 from app.schemas import (
     FinancialSummary,
     SpendingTrendPoint,
@@ -557,4 +558,146 @@ def check_affordability(
         daily_budget_after=daily_after,
         days_remaining=days_remaining,
         goal_impact=goal_impact,
+    )
+
+
+class PriceCheckRequest(BaseModel):
+    url: str = Field(..., min_length=3)
+    custom_name: Optional[str] = None
+
+
+class PriceHistoryPoint(BaseModel):
+    date: str
+    price: float
+    note: Optional[str] = None
+
+
+class PriceCheckResponse(BaseModel):
+    platform: str
+    product_name: str
+    current_price: Decimal
+    all_time_low: Decimal
+    all_time_high: Decimal
+    average_price: Decimal
+    discount_from_high: float
+    history_points: List[PriceHistoryPoint]
+    timing_verdict: str  # "BUY_NOW" | "WAIT" | "FAIR"
+    timing_title: str
+    timing_advice: str
+    # Personal finance integration
+    affordability_verdict: str  # "SAFE" | "CAUTION" | "DANGER"
+    affordability_advice: str
+    hours_of_work: float
+    work_time_formatted: str
+    hourly_rate: Decimal
+    current_balance: Decimal
+    upcoming_bills: Decimal
+    daily_budget_after: Decimal
+    days_remaining: int
+
+
+@router.post("/price-check", response_model=PriceCheckResponse)
+def check_product_price_and_timing(
+    payload: PriceCheckRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    # 1. Price history & timing analysis via Price Oracle
+    product_data = analyze_product_url(payload.url, payload.custom_name)
+
+    # 2. Personal finance affordability evaluation
+    today = date.today()
+    _, days_in_month = calendar.monthrange(today.year, today.month)
+    days_remaining = max(1, days_in_month - today.day + 1)
+
+    all_income = (
+        db.query(func.sum(Transaction.amount))
+        .filter(Transaction.user_id == current_user.id, Transaction.type == "income")
+        .scalar()
+        or Decimal("0.00")
+    )
+    all_expense = (
+        db.query(func.sum(Transaction.amount))
+        .filter(Transaction.user_id == current_user.id, Transaction.type == "expense")
+        .scalar()
+        or Decimal("0.00")
+    )
+    current_balance = Decimal(str(all_income)) - Decimal(str(all_expense))
+
+    recurring_items = (
+        db.query(RecurringPayment)
+        .filter(
+            RecurringPayment.user_id == current_user.id,
+            RecurringPayment.status == "active",
+        )
+        .all()
+    )
+    upcoming_bills = Decimal("0.00")
+    for r in recurring_items:
+        if r.next_payment_date >= today and r.next_payment_date.month == today.month and r.next_payment_date.year == today.year:
+            upcoming_bills += r.amount
+
+    m_income = (
+        db.query(func.sum(Transaction.amount))
+        .filter(
+            Transaction.user_id == current_user.id,
+            Transaction.type == "income",
+            extract("month", Transaction.transaction_date) == today.month,
+            extract("year", Transaction.transaction_date) == today.year,
+        )
+        .scalar()
+        or Decimal("0.00")
+    )
+    monthly_income = Decimal(str(m_income)) if m_income > 0 else Decimal("60000.00")
+    hourly_rate = round(monthly_income / Decimal("160.0"), 2)
+    hours_of_work = float(round(product_data["current_price"] / hourly_rate, 1))
+
+    if hours_of_work < 8:
+        work_time_formatted = f"{hours_of_work} hours of work"
+    else:
+        days_work = int(hours_of_work // 8)
+        rem_hrs = round(hours_of_work % 8, 1)
+        work_time_formatted = f"{days_work} working day{'s' if days_work > 1 else ''} and {rem_hrs} hrs"
+
+    discretionary_before = max(Decimal("0.00"), current_balance - upcoming_bills)
+    discretionary_after = discretionary_before - product_data["current_price"]
+    daily_after = round(discretionary_after / Decimal(str(days_remaining)), 2) if discretionary_after > 0 else Decimal("0.00")
+
+    if discretionary_after < 0:
+        affordability_verdict = "DANGER"
+        affordability_advice = (
+            f"Caution: Purchasing this now leaves a deficit against your upcoming ₹{upcoming_bills:,.2f} scheduled bills."
+        )
+    elif daily_after < Decimal("250.00"):
+        affordability_verdict = "CAUTION"
+        affordability_advice = (
+            f"You have funds, but purchasing drops your safe daily allowance to ₹{daily_after:,.2f}/day for {days_remaining} days."
+        )
+    else:
+        affordability_verdict = "SAFE"
+        affordability_advice = (
+            f"Fully covered by discretionary funds. Leaves ₹{daily_after:,.2f}/day allowance while keeping bills protected."
+        )
+
+    return PriceCheckResponse(
+        platform=product_data["platform"],
+        product_name=product_data["product_name"],
+        current_price=product_data["current_price"],
+        all_time_low=product_data["all_time_low"],
+        all_time_high=product_data["all_time_high"],
+        average_price=product_data["average_price"],
+        discount_from_high=product_data["discount_from_high"],
+        history_points=[PriceHistoryPoint(**p) for p in product_data["history_points"]],
+        timing_verdict=product_data["timing_verdict"],
+        timing_title=product_data["timing_title"],
+        timing_advice=product_data["timing_advice"],
+        affordability_verdict=affordability_verdict,
+        affordability_advice=affordability_advice,
+        hours_of_work=hours_of_work,
+        work_time_formatted=work_time_formatted,
+        hourly_rate=hourly_rate,
+        current_balance=current_balance,
+        upcoming_bills=upcoming_bills,
+        daily_budget_after=daily_after,
+        days_remaining=days_remaining,
     )
