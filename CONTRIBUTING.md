@@ -50,3 +50,4 @@ When contributing UI/UX or features, remember our primary guiding principle:
    npm run build
    ```
 6. **Submit a Pull Request**: Ensure all tests pass before opening a PR. Provide a clear description and screenshots of UI changes.
+

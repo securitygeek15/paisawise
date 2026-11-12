@@ -13,3 +13,4 @@ PaisaWise handles sensitive financial records. If you discover a security vulner
 - **Do NOT** open a public GitHub issue.
 - Please report vulnerabilities privately via GitHub Security Advisories or by emailing security@paisawise.local.
 - We will acknowledge receipt within 48 hours and coordinate remediation before public disclosure.
+
