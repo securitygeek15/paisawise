@@ -59,9 +59,11 @@ export function Sidebar({
         {/* Brand */}
         <div className="flex items-center justify-between px-2">
           <div className="flex items-center gap-2.5">
-            <div className="flex h-7 w-7 items-center justify-center rounded-md bg-[#171717] text-white font-mono text-sm font-semibold shadow-xs">
-              P
-            </div>
+            <img
+              src="/logo.svg"
+              alt="PaisaWise"
+              className="h-7 w-7 rounded-md object-contain shadow-xs"
+            />
             <div>
               <span className="font-semibold text-base tracking-tight text-[#171717]">
                 PaisaWise

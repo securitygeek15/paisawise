@@ -51,9 +51,11 @@ export function AppLayout() {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-[#FAFAFA]">
         <div className="flex flex-col items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#171717] text-white font-mono text-sm font-semibold">
-            P
-          </div>
+          <img
+            src="/logo.svg"
+            alt="PaisaWise"
+            className="h-10 w-10 rounded-lg object-contain shadow-xs"
+          />
           <div className="h-4 w-4 animate-spin rounded-full border-2 border-[#171717] border-t-transparent" />
         </div>
       </div>

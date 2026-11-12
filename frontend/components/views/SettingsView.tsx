@@ -13,6 +13,7 @@ import {
   FileSpreadsheet,
   FileCode,
   AlertTriangle,
+  Cpu,
 } from "lucide-react";
 
 export function SettingsView() {
@@ -343,6 +344,47 @@ export function SettingsView() {
             {passwordLoading ? "Updating..." : "Change Password"}
           </button>
         </form>
+      </div>
+
+      {/* 4. Local AI Model Architecture */}
+      <div className="rounded-lg border border-[#EAEAEA] bg-white p-6 shadow-2xs space-y-4">
+        <div className="flex items-center justify-between pb-3 border-b border-[#EAEAEA]">
+          <div className="flex items-center gap-2">
+            <Cpu className="h-4 w-4 text-[#171717]" />
+            <h2 className="text-sm font-semibold text-[#171717]">
+              Local AI Engine & On-Device Processing
+            </h2>
+          </div>
+          <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded border border-emerald-200 bg-emerald-50 text-emerald-800">
+            100% Local
+          </span>
+        </div>
+
+        <p className="text-xs text-[#737373] leading-relaxed">
+          PaisaWise is architected to operate entirely on your own machine. Your financial records, transaction histories, and budgets are never transmitted to third-party cloud AI vendors.
+        </p>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+          <div className="p-3 rounded border border-[#EAEAEA] bg-[#FAFAFA]">
+            <p className="text-[10px] uppercase font-mono text-[#737373]">Active Inference</p>
+            <p className="text-xs font-semibold text-[#171717] mt-0.5">
+              Ollama / Local Built-in Engine
+            </p>
+            <p className="text-[10px] text-[#A3A3A3] mt-1">
+              Supports local LLMs (llama3.2, mistral, phi3) or instant on-device deterministic analytics.
+            </p>
+          </div>
+
+          <div className="p-3 rounded border border-[#EAEAEA] bg-[#FAFAFA]">
+            <p className="text-[10px] uppercase font-mono text-[#737373]">Data Isolation</p>
+            <p className="text-xs font-semibold text-[#171717] mt-0.5">
+              Zero External Telemetry
+            </p>
+            <p className="text-[10px] text-[#A3A3A3] mt-1">
+              Runs offline. No cloud trackers, analytics beacons, or remote logging.
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* 5. Danger Zone: Delete Account */}

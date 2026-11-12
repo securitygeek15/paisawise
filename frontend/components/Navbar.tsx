@@ -25,9 +25,11 @@ export function Navbar({ onOpenMobileMenu, onOpenAssistant, onOpenNewTx, onOpenC
           <Menu className="h-5 w-5" />
         </button>
         <div className="flex items-center gap-2">
-          <div className="flex h-6 w-6 items-center justify-center rounded bg-[#171717] text-white font-mono text-xs font-semibold">
-            P
-          </div>
+          <img
+            src="/logo.svg"
+            alt="PaisaWise"
+            className="h-6 w-6 rounded object-contain"
+          />
           <span className="font-semibold tracking-tight text-[#171717]">PaisaWise</span>
         </div>
       </div>

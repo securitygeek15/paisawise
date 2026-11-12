@@ -25,11 +25,20 @@ export function AssistantModal({ isOpen, onClose }: AssistantModalProps) {
   const [messages, setMessages] = useState<Message[]>([
     {
       sender: "assistant",
-      text: "Hello! I'm your PaisaWise Financial Assistant. I analyze your recorded financial transactions to answer questions about your spending, budget health, and savings with zero guesswork. What would you like to review?",
+      text: "Hello! I'm your PaisaWise Local Assistant. I run 100% on your machine with zero cloud dependencies or data sharing. Ask me anything about your recorded spending, budgets, and savings goals.",
     },
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [engineInfo, setEngineInfo] = useState<string>("Built-in Local Engine");
+
+  React.useEffect(() => {
+    if (isOpen) {
+      apiRequest<{ name: string }>("/api/assistant/engine-status")
+        .then((res) => setEngineInfo(res.name))
+        .catch(() => setEngineInfo("Built-in Local Engine"));
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -75,11 +84,16 @@ export function AssistantModal({ isOpen, onClose }: AssistantModalProps) {
               <Sparkles className="h-4 w-4" />
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-[#171717]">
-                PaisaWise Assistant
-              </h3>
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-semibold text-[#171717]">
+                  PaisaWise Assistant
+                </h3>
+                <span className="text-[10px] font-mono uppercase px-1.5 py-0.5 rounded border border-[#EAEAEA] bg-[#FAFAFA] text-[#737373]">
+                  {engineInfo}
+                </span>
+              </div>
               <p className="text-[11px] text-[#737373]">
-                Deterministic data reasoning • Privacy first
+                100% On-Device • Zero Cloud Data Sharing
               </p>
             </div>
           </div>

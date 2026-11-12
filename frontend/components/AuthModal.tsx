@@ -50,9 +50,11 @@ export function AuthModal() {
       <div className="w-full max-w-sm rounded-xl border border-[#EAEAEA] bg-white p-6 shadow-xl animate-in fade-in-50 zoom-in-95 duration-200">
         {/* Brand header */}
         <div className="text-center mb-6">
-          <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-[#171717] text-white font-mono text-lg font-bold">
-            P
-          </div>
+          <img
+            src="/logo.svg"
+            alt="PaisaWise"
+            className="mx-auto mb-3 h-12 w-12 rounded-xl object-contain shadow-xs"
+          />
           <h2 className="text-lg font-semibold tracking-tight text-[#171717]">
             {isRegister ? "Create your PaisaWise account" : "Welcome back to PaisaWise"}
           </h2>

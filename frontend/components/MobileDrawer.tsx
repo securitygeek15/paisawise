@@ -70,9 +70,11 @@ export function MobileDrawer({
           {/* Header */}
           <div className="flex items-center justify-between border-b border-[#EAEAEA] pb-3">
             <div className="flex items-center gap-2">
-              <div className="flex h-6 w-6 items-center justify-center rounded bg-[#171717] text-white font-mono text-xs font-semibold">
-                P
-              </div>
+              <img
+                src="/logo.svg"
+                alt="PaisaWise"
+                className="h-6 w-6 rounded object-contain"
+              />
               <span className="font-semibold text-sm tracking-tight text-[#171717]">
                 PaisaWise
               </span>

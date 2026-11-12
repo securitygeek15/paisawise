@@ -15,6 +15,14 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "PaisaWise — Personal Finance Management",
   description: "Less interface. More clarity. Clean, minimalist personal finance management.",
+  icons: {
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/logo.svg", type: "image/svg+xml" },
+    ],
+    shortcut: "/icon.svg",
+    apple: "/logo.svg",
+  },
 };
 
 export default function RootLayout({
@@ -25,9 +33,13 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-[#FAFAFA] text-[#171717]">
+      <body
+        suppressHydrationWarning
+        className="min-h-full flex flex-col bg-[#FAFAFA] text-[#171717]"
+      >
         {children}
       </body>
     </html>
