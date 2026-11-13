@@ -108,8 +108,8 @@ export function OverviewView({
           </p>
         </div>
 
-        {/* Month Selector */}
-        <div className="flex items-center gap-2">
+        {/* Month Selector & Action Buttons */}
+        <div className="flex flex-wrap items-center gap-2">
           <div className="flex items-center gap-1 rounded-md border border-[#EAEAEA] bg-white px-2 py-1 shadow-2xs">
             <Calendar className="h-3.5 w-3.5 text-[#737373]" />
             <select
@@ -399,7 +399,7 @@ export function OverviewView({
                     <p className="truncate text-xs font-medium text-[#171717]">
                       {tx.name}
                     </p>
-                    <div className="flex items-center gap-2 mt-0.5 text-[11px] text-[#737373]">
+                    <div className="flex flex-wrap items-center gap-1.5 mt-0.5 text-[11px] text-[#737373]">
                       <span>{tx.category}</span>
                       <span>•</span>
                       <span>{formatDate(tx.transaction_date)}</span>

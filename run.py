@@ -8,7 +8,6 @@ def main():
     backend_dir = os.path.join(root_dir, "backend")
     frontend_dir = os.path.join(root_dir, "frontend")
 
-    # Determine Python executable
     if sys.platform == "win32":
         venv_python = os.path.join(backend_dir, "venv", "Scripts", "python.exe")
         npm_cmd = "npm.cmd"

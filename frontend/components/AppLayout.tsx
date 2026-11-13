@@ -72,7 +72,7 @@ export function AppLayout() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row bg-[#FAFAFA] text-[#171717]">
+    <div className="min-h-screen flex flex-col md:flex-row bg-[#FAFAFA] text-[#171717] overflow-x-hidden w-full">
       {/* Desktop Sidebar */}
       <Sidebar
         currentTab={currentTab}
@@ -91,8 +91,8 @@ export function AppLayout() {
       />
 
       {/* Main Content Area */}
-      <main className="flex-1 overflow-y-auto">
-        <div className="mx-auto max-w-6xl px-4 py-6 sm:px-8 sm:py-8 pb-24 md:pb-12">
+      <main className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden">
+        <div className="mx-auto max-w-6xl px-3 sm:px-6 md:px-8 py-4 sm:py-8 pb-24 md:pb-12 w-full">
           {currentTab === "overview" && (
             <OverviewView
               key={refreshTrigger}

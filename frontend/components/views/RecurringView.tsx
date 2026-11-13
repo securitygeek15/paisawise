@@ -253,12 +253,12 @@ export function RecurringView() {
               return (
                 <div
                   key={item.id}
-                  className={`flex items-center justify-between p-4 hover:bg-[#FAFAFA] transition-colors ${
+                  className={`flex flex-col sm:flex-row sm:items-center justify-between p-4 gap-3 hover:bg-[#FAFAFA] transition-colors ${
                     isPaused ? "opacity-60 bg-neutral-50/50" : ""
                   }`}
                 >
                   <div className="min-w-0 pr-4">
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       <h4 className="text-sm font-semibold text-[#171717]">
                         {item.name}
                       </h4>
@@ -271,14 +271,14 @@ export function RecurringView() {
                         </span>
                       )}
                     </div>
-                    <div className="mt-1 flex items-center gap-2 text-xs text-[#737373]">
+                    <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-[#737373]">
                       <span>{item.category}</span>
                       <span>•</span>
                       <span>Next due: {formatDate(item.next_payment_date)}</span>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-4 shrink-0">
+                  <div className="flex items-center justify-between sm:justify-end gap-4 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-[#F4F4F4]">
                     <div className="text-right font-mono">
                       <p className="text-sm font-bold text-[#171717]">
                         {formatCurrency(item.amount, currency)}

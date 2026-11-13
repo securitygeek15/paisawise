@@ -135,8 +135,8 @@ export function CanIAffordModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
-      <div className="w-full max-w-xl rounded-xl border border-[#EAEAEA] bg-white p-6 shadow-2xl animate-in fade-in-50 zoom-in-95 duration-200 flex flex-col max-h-[92vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-2.5 sm:p-4">
+      <div className="w-full max-w-xl rounded-xl border border-[#EAEAEA] bg-white p-4 sm:p-6 shadow-2xl animate-in fade-in-50 zoom-in-95 duration-200 flex flex-col max-h-[94vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-start justify-between border-b border-[#EAEAEA] pb-4">
           <div>
@@ -162,7 +162,7 @@ export function CanIAffordModal({
 
         {/* URL Input Form */}
         <form onSubmit={handleSubmit} className="mt-4 space-y-2.5">
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-[#A3A3A3]" />
               <input
@@ -218,8 +218,8 @@ export function CanIAffordModal({
         {!loading && data && (
           <div className="mt-5 space-y-4 pt-4 border-t border-[#EAEAEA] animate-in fade-in-50 duration-200">
             {/* 1. Product Metadata Card */}
-            <div className="rounded-lg border border-[#EAEAEA] bg-[#FAFAFA] p-4">
-              <div className="flex items-start justify-between gap-3">
+            <div className="rounded-lg border border-[#EAEAEA] bg-[#FAFAFA] p-3.5 sm:p-4">
+              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                 <div>
                   <div className="flex items-center gap-2 mb-1">
                     <span className="rounded bg-[#171717] text-white text-[10px] font-mono px-2 py-0.5 uppercase tracking-wider font-semibold">
@@ -234,7 +234,7 @@ export function CanIAffordModal({
                   </h3>
                 </div>
 
-                <div className="text-right shrink-0 font-mono">
+                <div className="text-left sm:text-right shrink-0 font-mono">
                   {isEditingPrice ? (
                     <div className="flex items-center gap-1.5 justify-end">
                       <span className="text-xs text-[#737373]">₹</span>

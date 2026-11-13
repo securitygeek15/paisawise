@@ -249,74 +249,126 @@ export function TransactionsView({
             No transactions match your search and filter criteria.
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-xs">
-              <thead>
-                <tr className="border-b border-[#EAEAEA] bg-[#FAFAFA] text-[11px] font-medium uppercase tracking-wider text-[#737373]">
-                  <th className="py-3 px-4">Transaction Name</th>
-                  <th className="py-3 px-4">Category</th>
-                  <th className="py-3 px-4">Date</th>
-                  <th className="py-3 px-4">Method</th>
-                  <th className="py-3 px-4 text-right">Amount</th>
-                  <th className="py-3 px-4 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[#EAEAEA]">
-                {data?.items.map((tx) => (
-                  <tr
-                    key={tx.id}
-                    className="hover:bg-[#FAFAFA] transition-colors group"
-                  >
-                    <td className="py-3 px-4">
-                      <div className="font-medium text-[#171717]">{tx.name}</div>
-                      {tx.notes && (
-                        <div className="text-[11px] text-[#A3A3A3] truncate max-w-xs">
-                          {tx.notes}
-                        </div>
-                      )}
-                    </td>
-                    <td className="py-3 px-4 text-[#737373]">
-                      <span className="rounded bg-[#F4F4F4] px-2 py-0.5 text-[11px] border border-[#EAEAEA]">
-                        {tx.category}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4 text-[#737373] whitespace-nowrap">
-                      {formatDate(tx.transaction_date)}
-                    </td>
-                    <td className="py-3 px-4 text-[#737373] font-mono text-[11px]">
-                      {tx.payment_method}
-                    </td>
-                    <td
-                      className={`py-3 px-4 text-right font-mono font-medium whitespace-nowrap ${
-                        tx.type === "income" ? "text-emerald-700" : "text-[#171717]"
-                      }`}
-                    >
-                      {tx.type === "income" ? "+" : "-"}
-                      {formatCurrency(tx.amount, currency)}
-                    </td>
-                    <td className="py-3 px-4 text-right whitespace-nowrap">
-                      <div className="flex items-center justify-end gap-1 opacity-70 group-hover:opacity-100 transition-opacity">
-                        <button
-                          onClick={() => onEditTx(tx)}
-                          className="rounded p-1 text-[#737373] hover:text-[#171717] hover:bg-[#F4F4F4]"
-                          title="Edit"
-                        >
-                          <Edit2 className="h-3.5 w-3.5" />
-                        </button>
-                        <button
-                          onClick={() => setDeletingId(tx.id)}
-                          className="rounded p-1 text-[#737373] hover:text-red-600 hover:bg-red-50"
-                          title="Delete"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </button>
-                      </div>
-                    </td>
+          <>
+            {/* Desktop / Tablet Table View */}
+            <div className="hidden sm:block overflow-x-auto">
+              <table className="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr className="border-b border-[#EAEAEA] bg-[#FAFAFA] text-[11px] font-medium uppercase tracking-wider text-[#737373]">
+                    <th className="py-3 px-4">Transaction Name</th>
+                    <th className="py-3 px-4">Category</th>
+                    <th className="py-3 px-4">Date</th>
+                    <th className="py-3 px-4">Method</th>
+                    <th className="py-3 px-4 text-right">Amount</th>
+                    <th className="py-3 px-4 text-right">Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-[#EAEAEA]">
+                  {data?.items.map((tx) => (
+                    <tr
+                      key={tx.id}
+                      className="hover:bg-[#FAFAFA] transition-colors group"
+                    >
+                      <td className="py-3 px-4">
+                        <div className="font-medium text-[#171717]">{tx.name}</div>
+                        {tx.notes && (
+                          <div className="text-[11px] text-[#A3A3A3] truncate max-w-xs">
+                            {tx.notes}
+                          </div>
+                        )}
+                      </td>
+                      <td className="py-3 px-4 text-[#737373]">
+                        <span className="rounded bg-[#F4F4F4] px-2 py-0.5 text-[11px] border border-[#EAEAEA]">
+                          {tx.category}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 text-[#737373] whitespace-nowrap">
+                        {formatDate(tx.transaction_date)}
+                      </td>
+                      <td className="py-3 px-4 text-[#737373] font-mono text-[11px]">
+                        {tx.payment_method}
+                      </td>
+                      <td
+                        className={`py-3 px-4 text-right font-mono font-medium whitespace-nowrap ${
+                          tx.type === "income" ? "text-emerald-700" : "text-[#171717]"
+                        }`}
+                      >
+                        {tx.type === "income" ? "+" : "-"}
+                        {formatCurrency(tx.amount, currency)}
+                      </td>
+                      <td className="py-3 px-4 text-right whitespace-nowrap">
+                        <div className="flex items-center justify-end gap-1 opacity-70 group-hover:opacity-100 transition-opacity">
+                          <button
+                            onClick={() => onEditTx(tx)}
+                            className="rounded p-1 text-[#737373] hover:text-[#171717] hover:bg-[#F4F4F4]"
+                            title="Edit"
+                          >
+                            <Edit2 className="h-3.5 w-3.5" />
+                          </button>
+                          <button
+                            onClick={() => setDeletingId(tx.id)}
+                            className="rounded p-1 text-[#737373] hover:text-red-600 hover:bg-red-50"
+                            title="Delete"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile Card List View (< 640px) */}
+            <div className="block sm:hidden divide-y divide-[#EAEAEA]">
+              {data?.items.map((tx) => (
+                <div key={tx.id} className="p-3.5 space-y-2">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium text-xs text-[#171717] truncate">{tx.name}</p>
+                      <div className="flex flex-wrap items-center gap-1.5 mt-1 text-[10px] text-[#737373]">
+                        <span className="rounded bg-[#F4F4F4] px-1.5 py-0.5 border border-[#EAEAEA]">
+                          {tx.category}
+                        </span>
+                        <span>•</span>
+                        <span>{formatDate(tx.transaction_date)}</span>
+                        <span>•</span>
+                        <span className="font-mono">{tx.payment_method}</span>
+                      </div>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <p
+                        className={`text-xs font-semibold font-mono ${
+                          tx.type === "income" ? "text-emerald-700" : "text-[#171717]"
+                        }`}
+                      >
+                        {tx.type === "income" ? "+" : "-"}
+                        {formatCurrency(tx.amount, currency)}
+                      </p>
+                    </div>
+                  </div>
+                  {tx.notes && (
+                    <p className="text-[10px] text-[#A3A3A3] truncate">{tx.notes}</p>
+                  )}
+                  <div className="flex items-center justify-end gap-2 pt-1 border-t border-[#F4F4F4]">
+                    <button
+                      onClick={() => onEditTx(tx)}
+                      className="text-[11px] font-medium text-[#737373] hover:text-[#171717] px-2.5 py-1 rounded border border-[#EAEAEA] bg-white transition-colors"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => setDeletingId(tx.id)}
+                      className="text-[11px] font-medium text-red-600 hover:bg-red-50 px-2.5 py-1 rounded border border-red-200 bg-white transition-colors"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
         )}
 
         {/* 4. Pagination */}

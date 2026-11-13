@@ -157,7 +157,7 @@ export function BudgetsView() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {/* Month selector */}
           <div className="flex items-center gap-1 rounded-md border border-[#EAEAEA] bg-white px-2 py-1 shadow-2xs">
             <Calendar className="h-3.5 w-3.5 text-[#737373]" />
