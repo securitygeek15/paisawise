@@ -170,6 +170,8 @@ export interface PriceCheckResponse {
   upcoming_bills: number | string;
   daily_budget_after: number | string;
   days_remaining: number;
+  data_source?: string;
+  requires_confirmation?: boolean;
 }
 
 

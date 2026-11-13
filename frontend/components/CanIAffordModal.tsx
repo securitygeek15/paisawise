@@ -67,6 +67,7 @@ export function CanIAffordModal({
 }: CanIAffordModalProps) {
   const { user } = useAuth();
   const [url, setUrl] = useState(QUICK_TEST_PRODUCTS[0].url);
+  const [upfrontPrice, setUpfrontPrice] = useState("");
   const [customName, setCustomName] = useState("");
   const [data, setData] = useState<PriceCheckResponse | null>(null);
   const [loading, setLoading] = useState(false);
@@ -100,6 +101,9 @@ export function CanIAffordModal({
       );
       setData(res);
       setManualPrice(String(res.current_price));
+      if (overridePrice) {
+        setUpfrontPrice(String(overridePrice));
+      }
     } catch (err) {
       console.error("Price check failed", err);
     } finally {
@@ -117,7 +121,8 @@ export function CanIAffordModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    analyzeProduct(url, customName);
+    const parsed = upfrontPrice ? parseFloat(upfrontPrice) : null;
+    analyzeProduct(url, customName, parsed);
   };
 
   const handleApplyManualPrice = () => {
@@ -130,6 +135,7 @@ export function CanIAffordModal({
   const handleSelectQuick = (testUrl: string) => {
     setUrl(testUrl);
     setCustomName("");
+    setUpfrontPrice("");
     setManualPrice("");
     analyzeProduct(testUrl);
   };
@@ -172,6 +178,16 @@ export function CanIAffordModal({
                 onChange={(e) => setUrl(e.target.value)}
                 placeholder="Paste Amazon, Flipkart, or Myntra product link..."
                 className="w-full rounded-md border border-[#EAEAEA] bg-[#FAFAFA] pl-8 pr-3 py-2 text-xs text-[#171717] focus:border-[#171717] focus:bg-white focus:outline-none transition-colors"
+              />
+            </div>
+            <div className="relative w-full sm:w-32">
+              <span className="absolute left-3 top-2 text-xs text-[#737373] font-mono">₹</span>
+              <input
+                type="number"
+                value={upfrontPrice}
+                onChange={(e) => setUpfrontPrice(e.target.value)}
+                placeholder="Price (opt)"
+                className="w-full rounded-md border border-[#EAEAEA] bg-[#FAFAFA] pl-6 pr-3 py-2 text-xs font-mono text-[#171717] focus:border-[#171717] focus:bg-white focus:outline-none transition-colors"
               />
             </div>
             <button
@@ -217,6 +233,19 @@ export function CanIAffordModal({
 
         {!loading && data && (
           <div className="mt-5 space-y-4 pt-4 border-t border-[#EAEAEA] animate-in fade-in-50 duration-200">
+            {/* Confirmation Banner if required */}
+            {data.requires_confirmation && (
+              <div className="rounded-md border border-amber-200 bg-amber-50/70 p-3 text-xs text-amber-950 flex items-start gap-2.5">
+                <AlertTriangle className="h-4 w-4 text-amber-700 shrink-0 mt-0.5" />
+                <div className="flex-1 leading-relaxed">
+                  <p className="font-semibold text-amber-900">Verify Exact Product Variant Price</p>
+                  <p className="text-[11px] text-amber-800/90 mt-0.5">
+                    Store bot-protection masked the live price. We matched this category at ₹{formatCurrency(data.current_price, currency)}. Click the pencil icon to input your exact price for 100% precision.
+                  </p>
+                </div>
+              </div>
+            )}
+
             {/* 1. Product Metadata Card */}
             <div className="rounded-lg border border-[#EAEAEA] bg-[#FAFAFA] p-3.5 sm:p-4">
               <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
@@ -225,8 +254,8 @@ export function CanIAffordModal({
                     <span className="rounded bg-[#171717] text-white text-[10px] font-mono px-2 py-0.5 uppercase tracking-wider font-semibold">
                       {data.platform}
                     </span>
-                    <span className="text-[11px] text-[#737373]">
-                      Price History Verified
+                    <span className="text-[11px] text-[#737373] font-mono">
+                      {data.data_source || "Verified Retail Data"}
                     </span>
                   </div>
                   <h3 className="text-sm font-semibold text-[#171717] leading-snug">

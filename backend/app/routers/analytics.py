@@ -422,6 +422,8 @@ class AffordabilityResponse(BaseModel):
     daily_budget_before: Decimal
     daily_budget_after: Decimal
     days_remaining: int
+    data_source: Optional[str] = "Verified Data"
+    requires_confirmation: Optional[bool] = False
     goal_impact: Optional[str] = None
 
 
@@ -595,6 +597,8 @@ class PriceCheckResponse(BaseModel):
     upcoming_bills: Decimal
     daily_budget_after: Decimal
     days_remaining: int
+    data_source: Optional[str] = "Verified Data"
+    requires_confirmation: Optional[bool] = False
 
 
 @router.post("/price-check", response_model=PriceCheckResponse)
@@ -705,4 +709,6 @@ def check_product_price_and_timing(
         upcoming_bills=upcoming_bills,
         daily_budget_after=daily_after,
         days_remaining=days_remaining,
+        data_source=product_data.get("data_source", "Verified Data"),
+        requires_confirmation=product_data.get("requires_confirmation", False),
     )
