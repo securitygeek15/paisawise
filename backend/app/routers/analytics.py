@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, HTTPException
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 from sqlalchemy import func, extract, desc
@@ -608,11 +608,14 @@ def check_product_price_and_timing(
     db: Session = Depends(get_db),
 ):
     # 1. Price history & timing analysis via Price Oracle
-    product_data = analyze_product_url(
-        payload.url,
-        custom_name=payload.custom_name,
-        override_price=payload.override_price,
-    )
+    try:
+        product_data = analyze_product_url(
+            payload.url,
+            custom_name=payload.custom_name,
+            override_price=payload.override_price,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
     # 2. Personal finance affordability evaluation
     today = date.today()

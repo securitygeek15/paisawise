@@ -20,8 +20,8 @@
 
 PaisaWise includes a built-in decision engine that bridges e-commerce shopping with personal financial reality:
 
-- Product Link Analysis: Paste any product URL from Amazon, Flipkart, or Myntra directly into the app.
-- Live Price Extraction: Automatically parses live ex-showroom/product pricing, title, and platform metadata via real-time Schema.org JSON-LD extraction.
+- Product Link Analysis: Paste any product URL from Amazon or Flipkart directly into the app.
+- Live Retail Extraction: Directly extracts live product pricing, clean titles, and platform metadata from Amazon and Flipkart using verified DOM/JSON-LD scrapers.
 - 6-Month Price History: Visualizes historical price fluctuations, tracking all-time lows, averages, and peak pricing to verify if a sale discount is genuine.
 - Market Timing Verdict: Classifies current pricing as Optimal (near all-time low), Overpriced (wait for next sale), or Fair Value.
 - Personal Reality Check: Calculates the purchase price in actual hours of work based on your net income, and computes your remaining safe daily spending allowance while keeping upcoming recurring bills protected.

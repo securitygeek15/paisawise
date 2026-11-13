@@ -54,10 +54,6 @@ const QUICK_TEST_PRODUCTS = [
     label: "MacBook Air M2 (Amazon)",
     url: "https://www.amazon.in/Apple-MacBook-Laptop-chip-Liquid/dp/B0B3B3W56W",
   },
-  {
-    label: "Nike Air Force 1 (Myntra)",
-    url: "https://www.myntra.com/casual-shoes/nike/nike-men-white-air-force-1-07-sneakers/13812836/buy",
-  },
 ];
 
 export function CanIAffordModal({
@@ -71,6 +67,7 @@ export function CanIAffordModal({
   const [customName, setCustomName] = useState("");
   const [data, setData] = useState<PriceCheckResponse | null>(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [alertSet, setAlertSet] = useState(false);
   const [isEditingPrice, setIsEditingPrice] = useState(false);
   const [manualPrice, setManualPrice] = useState("");
@@ -85,6 +82,7 @@ export function CanIAffordModal({
     if (!productUrl.trim()) return;
 
     setLoading(true);
+    setError(null);
     setAlertSet(false);
     setIsEditingPrice(false);
     try {
@@ -104,8 +102,12 @@ export function CanIAffordModal({
       if (overridePrice) {
         setUpfrontPrice(String(overridePrice));
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Price check failed", err);
+      setError(
+        err?.message ||
+          "Failed to analyze product. Please make sure the URL is from Amazon or Flipkart."
+      );
     } finally {
       setLoading(false);
     }
@@ -155,7 +157,7 @@ export function CanIAffordModal({
               </h2>
             </div>
             <p className="mt-0.5 text-xs text-[#737373]">
-              Paste any product link from Amazon, Flipkart, or Myntra to check historical pricing and your personal financial readiness.
+              Paste any product link from Amazon or Flipkart to check historical pricing and your personal financial readiness.
             </p>
           </div>
           <button
@@ -176,7 +178,7 @@ export function CanIAffordModal({
                 required
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
-                placeholder="Paste Amazon, Flipkart, or Myntra product link..."
+                placeholder="Paste Amazon or Flipkart product link..."
                 className="w-full rounded-md border border-[#EAEAEA] bg-[#FAFAFA] pl-8 pr-3 py-2 text-xs text-[#171717] focus:border-[#171717] focus:bg-white focus:outline-none transition-colors"
               />
             </div>
@@ -221,12 +223,20 @@ export function CanIAffordModal({
           </div>
         </form>
 
+        {/* Error message */}
+        {error && (
+          <div className="mt-4 rounded-md border border-red-200 bg-red-50 p-3 text-xs text-red-900 flex items-start gap-2">
+            <AlertCircle className="h-4 w-4 text-red-600 shrink-0 mt-0.5" />
+            <p className="flex-1">{error}</p>
+          </div>
+        )}
+
         {/* Results Section */}
         {loading && (
           <div className="py-12 flex flex-col items-center justify-center gap-2">
             <div className="h-5 w-5 animate-spin rounded-full border-2 border-[#171717] border-t-transparent" />
             <p className="text-xs text-[#737373]">
-              Digging through 6-month historical price records on {url.includes("flipkart") ? "Flipkart" : url.includes("myntra") ? "Myntra" : "Amazon"}...
+              Digging through 6-month historical price records on {url.includes("flipkart") ? "Flipkart" : "Amazon"}...
             </p>
           </div>
         )}

@@ -205,7 +205,7 @@ def test_analytics_and_export():
     assert extreme_res.status_code == 200
     assert extreme_res.json()["verdict"] == "DANGER"
 
-    # Test Price Check Oracle
+    # Test Price Check Oracle - Amazon
     price_res = client.post("/api/analytics/price-check", json={
         "url": "https://www.amazon.in/Sony-WH-1000XM5-Wireless-Cancelling-Headphones/dp/B09XS7JWHH"
     }, headers=headers)
@@ -217,3 +217,23 @@ def test_analytics_and_export():
     assert float(pdata["all_time_low"]) > 0
     assert "timing_verdict" in pdata
     assert "affordability_verdict" in pdata
+
+    # Test Price Check Oracle - Flipkart (Hero Passion Bike accurate price)
+    fk_res = client.post("/api/analytics/price-check", json={
+        "url": "https://www.flipkart.com/hero-new-passion-booking-ex-showroom-price/p/itm88a44bac3e13c"
+    }, headers=headers)
+    assert fk_res.status_code == 200
+    fk_data = fk_res.json()
+    assert fk_data["platform"] == "Flipkart"
+    assert "Hero" in fk_data["product_name"]
+    # Verify the bike price is in the accurate ~81k range, NOT 10k!
+    assert float(fk_data["current_price"]) >= 75000.00
+    assert float(fk_data["current_price"]) <= 90000.00
+
+    # Test Price Check Oracle - Unsupported platform returns 400
+    bad_res = client.post("/api/analytics/price-check", json={
+        "url": "https://www.myntra.com/casual-shoes/nike/nike-men-white-air-force-1-07-sneakers/13812836/buy"
+    }, headers=headers)
+    assert bad_res.status_code == 400
+    assert "Amazon" in bad_res.json()["detail"]
+    assert "Flipkart" in bad_res.json()["detail"]

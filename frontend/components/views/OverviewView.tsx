@@ -251,7 +251,7 @@ export function OverviewView({
               Smart Buy &amp; Price History Oracle
             </h3>
             <p className="text-[11px] text-[#737373]">
-              Paste any product link (Amazon, Flipkart, Myntra) to inspect historical sale dips, timing verdicts, and personal financial readiness.
+              Paste any product link (Amazon or Flipkart) to inspect historical sale dips, timing verdicts, and personal financial readiness.
             </p>
           </div>
         </div>
