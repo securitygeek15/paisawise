@@ -13,12 +13,12 @@
       <div class="logo">P</div>
       <div>
         <h1 class="title">PaisaWise</h1>
-        <p class="subtitle">Smart Buy & Price Oracle</p>
+        <p class="subtitle">Smart Buy &amp; Price Oracle</p>
       </div>
     </div>
-    <div id="connection-status" class="status-indicator status-checking" title="Checking local backend...">
+    <div class="status-indicator status-online" title="Ready to inspect Amazon and Flipkart products">
       <span class="status-dot"></span>
-      <span id="status-text" class="status-label">Checking</span>
+      <span class="status-label">Active</span>
     </div>
   </header>
 
@@ -39,27 +39,25 @@
     <div id="search-section" class="section">
       <label for="url-input" class="input-label">Check Amazon or Flipkart Link</label>
       <div class="search-box">
-        <input type="text" id="url-input" placeholder="Paste product URL..." autocomplete="off">
+        <input type="text" id="url-input" placeholder="Paste Amazon or Flipkart link..." autocomplete="off">
         <button id="analyze-btn" class="btn btn-primary">Analyze</button>
       </div>
       <div id="search-error" class="error-box hidden"></div>
       <div id="search-results" class="results-box hidden"></div>
     </div>
 
-    <!-- Financial Quick Snapshot -->
-    <div id="finance-snapshot-section" class="section">
-      <div class="snapshot-header">
-        <span class="input-label">Personal Finance Snapshot</span>
-        <a href="http://localhost:3000" target="_blank" class="link-muted">Open Dashboard &rarr;</a>
-      </div>
-      <div class="snapshot-grid">
-        <div class="stat-card">
-          <span class="stat-label">Net Balance</span>
-          <span id="stat-balance" class="stat-value">--</span>
-        </div>
-        <div class="stat-card">
-          <span class="stat-label">Month Spend</span>
-          <span id="stat-spend" class="stat-value">--</span>
+    <!-- Personal Reality Settings -->
+    <div class="section">
+      <div class="settings-card">
+        <div class="settings-row">
+          <div>
+            <span class="input-label" style="margin-bottom: 2px; display: block;">Your Monthly Income</span>
+            <span class="muted-text">For the hours-of-work reality check</span>
+          </div>
+          <div class="income-input-wrap">
+            <span class="currency-symbol">₹</span>
+            <input type="number" id="income-input" value="60000" step="5000" min="1000">
+          </div>
         </div>
       </div>
     </div>
@@ -67,8 +65,8 @@
 
   <!-- Footer -->
   <footer class="footer">
-    <span class="footer-privacy">100% Local &amp; Private</span>
-    <a href="http://localhost:3000" target="_blank" class="footer-link">localhost:3000</a>
+    <span class="footer-privacy">100% On-Device &amp; Private</span>
+    <span class="footer-tag">Amazon &amp; Flipkart</span>
   </footer>
 
   <script src="popup.js"></script>

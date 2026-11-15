@@ -1,9 +1,6 @@
-// PaisaWise Popup Script
+// PaisaWise Popup Script (100% Standalone On-Device)
 
 document.addEventListener("DOMContentLoaded", () => {
-  const statusIndicator = document.getElementById("connection-status");
-  const statusText = document.getElementById("status-text");
-
   const activeSection = document.getElementById("active-product-section");
   const activeCard = document.getElementById("active-product-card");
 
@@ -12,48 +9,23 @@ document.addEventListener("DOMContentLoaded", () => {
   const searchError = document.getElementById("search-error");
   const searchResults = document.getElementById("search-results");
 
-  const statBalance = document.getElementById("stat-balance");
-  const statSpend = document.getElementById("stat-spend");
+  const incomeInput = document.getElementById("income-input");
 
-  // 1. Check Backend Health
-  chrome.runtime.sendMessage({ action: "CHECK_HEALTH" }, (res) => {
-    if (res && res.healthy) {
-      statusIndicator.className = "status-indicator status-online";
-      statusText.textContent = "Online";
-      loadFinancialSnapshot();
-    } else {
-      statusIndicator.className = "status-indicator status-standalone";
-      statusText.textContent = "Standalone";
-      statusIndicator.title = "Local backend offline. Running standalone price oracle. Start python run.py to sync balance.";
-      statBalance.textContent = "₹--";
-      statSpend.textContent = "₹--";
+  // 1. Initialize user monthly income preference
+  chrome.storage.local.get(["user_income"], (res) => {
+    if (res && res.user_income) {
+      incomeInput.value = res.user_income;
     }
   });
 
-  // 2. Load Financial Snapshot
-  function loadFinancialSnapshot() {
-    chrome.runtime.sendMessage({ action: "GET_OVERVIEW" }, (res) => {
-      if (res && res.success && res.data) {
-        const summary = res.data.summary || {};
-        if (summary.total_balance !== undefined) {
-          statBalance.textContent = Number(summary.total_balance).toLocaleString("en-IN", {
-            style: "currency",
-            currency: "INR",
-            maximumFractionDigits: 0
-          });
-        }
-        if (summary.total_expense !== undefined) {
-          statSpend.textContent = Number(summary.total_expense).toLocaleString("en-IN", {
-            style: "currency",
-            currency: "INR",
-            maximumFractionDigits: 0
-          });
-        }
-      }
-    });
-  }
+  incomeInput.addEventListener("change", () => {
+    const val = parseFloat(incomeInput.value);
+    if (!isNaN(val) && val > 0) {
+      chrome.runtime.sendMessage({ action: "SET_INCOME", income: val });
+    }
+  });
 
-  // 3. Check Active Tab
+  // 2. Detect active tab product
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     const activeTab = tabs[0];
     if (!activeTab || !activeTab.url) return;
@@ -81,7 +53,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // 4. Handle Manual Search
+  // 3. Handle manual search
   analyzeBtn.addEventListener("click", () => {
     handleManualAnalysis();
   });
@@ -120,7 +92,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Render Product Card
+  // 4. Render Product Card
   function renderProductCard(container, data) {
     const curFormatted = Number(data.current_price).toLocaleString("en-IN", {
       style: "currency",
@@ -140,7 +112,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let verdictColor = "#166534";
     let verdictBg = "#DCFCE7";
-    if (data.timing_verdict.includes("WAIT") || data.timing_verdict.includes("HIGH")) {
+    if (data.timing_verdict.includes("WAIT") || data.timing_verdict.includes("HIGH") || data.timing_verdict.includes("PEAK")) {
       verdictColor = "#991B1B";
       verdictBg = "#FEE2E2";
     }
@@ -161,9 +133,9 @@ document.addEventListener("DOMContentLoaded", () => {
         <span>High: <strong>${highFormatted}</strong></span>
       </div>
       <div class="prod-hours">
-        <strong>Reality Check:</strong> ${data.work_time_formatted}
+        <strong>Hours of Work:</strong> ${data.work_time_formatted}
         <div style="font-size: 10px; color: #737373; margin-top: 2px;">
-          Safe allowance after: ₹${Number(data.daily_budget_after).toFixed(0)}/day
+          ${data.affordability_advice}
         </div>
       </div>
     `;

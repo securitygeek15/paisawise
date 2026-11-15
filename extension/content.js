@@ -120,9 +120,8 @@
             <div class="pw-card" style="border-color: #FECACA; background: #FEF2F2;">
               <p style="font-size: 12px; font-weight: 600; color: #991B1B;">Analysis Notice</p>
               <p style="font-size: 11px; color: #7F1D1D; margin-top: 4px;">
-                ${response?.error || "Could not connect to PaisaWise local backend. Please make sure 'python run.py' is running on your machine."}
+                ${response?.error || "Could not analyze product pricing. Please verify you are on an active Amazon or Flipkart product page."}
               </p>
-              <a href="http://localhost:3000" target="_blank" class="pw-footer-btn" style="margin-top: 12px;">Open PaisaWise Dashboard</a>
             </div>
           `;
           return;
