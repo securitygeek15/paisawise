@@ -79,6 +79,9 @@ body {
 .status-online .status-dot { background: #16A34A; }
 .status-online { color: #166534; border-color: #BBF7D0; }
 
+.status-standalone .status-dot { background: #D97706; }
+.status-standalone { color: #B45309; border-color: #FDE68A; }
+
 .status-offline .status-dot { background: #DC2626; }
 .status-offline { color: #991B1B; border-color: #FECACA; }
 

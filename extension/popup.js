@@ -22,10 +22,11 @@ document.addEventListener("DOMContentLoaded", () => {
       statusText.textContent = "Online";
       loadFinancialSnapshot();
     } else {
-      statusIndicator.className = "status-indicator status-offline";
-      statusText.textContent = "Offline";
-      searchError.textContent = "PaisaWise local backend is offline. Run 'python run.py' on your machine.";
-      searchError.classList.remove("hidden");
+      statusIndicator.className = "status-indicator status-standalone";
+      statusText.textContent = "Standalone";
+      statusIndicator.title = "Local backend offline. Running standalone price oracle. Start python run.py to sync balance.";
+      statBalance.textContent = "₹--";
+      statSpend.textContent = "₹--";
     }
   });
 
