@@ -3,7 +3,9 @@
 document.addEventListener("DOMContentLoaded", () => {
   const activeSection = document.getElementById("active-product-section");
   const activeCard = document.getElementById("active-product-card");
+  const toggleSearchBtn = document.getElementById("toggle-search-btn");
 
+  const searchSection = document.getElementById("search-section");
   const urlInput = document.getElementById("url-input");
   const analyzeBtn = document.getElementById("analyze-btn");
   const searchError = document.getElementById("search-error");
@@ -25,7 +27,88 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // 2. Detect active tab product
+  // 2. Toggle search section
+  if (toggleSearchBtn) {
+    toggleSearchBtn.addEventListener("click", () => {
+      searchSection.classList.toggle("hidden");
+      toggleSearchBtn.textContent = searchSection.classList.contains("hidden")
+        ? "Check another link →"
+        : "Hide link input ↑";
+    });
+  }
+
+  // Helper to extract page info from active tab
+  function extractActivePageInfo(tabId, fallbackUrl, callback) {
+    // Try sending message to content script first
+    chrome.tabs.sendMessage(tabId, { action: "GET_PAGE_INFO" }, (res) => {
+      if (!chrome.runtime.lastError && res && (res.title || res.price)) {
+        return callback(res);
+      }
+
+      // Fallback: executeScript directly on active tab DOM
+      try {
+        chrome.scripting.executeScript(
+          {
+            target: { tabId },
+            func: () => {
+              let title = null;
+              let price = null;
+              try {
+                // Amazon Title
+                const aTitle = document.querySelector("#productTitle, #title");
+                if (aTitle && aTitle.textContent.trim()) {
+                  title = aTitle.textContent.trim();
+                }
+                // Flipkart Title
+                const fTitle = document.querySelector("h1.VU-ZEz, h1.B_NuCI, h1");
+                if (!title && fTitle && fTitle.textContent.trim()) {
+                  title = fTitle.textContent.trim();
+                }
+                // Fallback document.title
+                if (!title && document.title) {
+                  title = document.title.split(":")[0].split("|")[0].replace(/Buy /i, "").trim();
+                }
+
+                // Amazon Price
+                const aWhole = document.querySelector(".a-price-whole");
+                if (aWhole) {
+                  const num = parseFloat(aWhole.textContent.replace(/[^\d.]/g, ""));
+                  if (!isNaN(num) && num > 0) price = num;
+                }
+                if (!price) {
+                  const aDeal = document.querySelector("#priceblock_ourprice, #priceblock_dealprice");
+                  if (aDeal) {
+                    const num = parseFloat(aDeal.textContent.replace(/[^\d.]/g, ""));
+                    if (!isNaN(num) && num > 0) price = num;
+                  }
+                }
+
+                // Flipkart Price
+                if (!price) {
+                  const fPrice = document.querySelector("._30jeq3._16Jk6d, div._30jeq3, div.Nx9bqj");
+                  if (fPrice) {
+                    const num = parseFloat(fPrice.textContent.replace(/[^\d.]/g, ""));
+                    if (!isNaN(num) && num > 0) price = num;
+                  }
+                }
+              } catch (e) {}
+              return { title, price };
+            }
+          },
+          (results) => {
+            if (!chrome.runtime.lastError && results && results[0] && results[0].result) {
+              return callback(results[0].result);
+            }
+            callback({ title: null, price: null });
+          }
+        );
+      } catch (err) {
+        callback({ title: null, price: null });
+      }
+    });
+  }
+
+  // 3. Detect active tab product
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     const activeTab = tabs[0];
     if (!activeTab || !activeTab.url) return;
@@ -39,21 +122,34 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (isProduct) {
       activeSection.classList.remove("hidden");
-      chrome.runtime.sendMessage({ action: "CHECK_PRICE", url }, (res) => {
-        if (res && res.success && res.data) {
-          renderProductCard(activeCard, res.data);
-        } else {
-          activeCard.innerHTML = `
-            <div style="font-size: 11px; color: #991B1B;">
-              ${res?.error || "Unable to extract active page price."}
-            </div>
-          `;
-        }
+      // Hide manual search box by default to avoid duplicate cards and scrollbars
+      searchSection.classList.add("hidden");
+
+      extractActivePageInfo(activeTab.id, url, (pageInfo) => {
+        chrome.runtime.sendMessage(
+          {
+            action: "CHECK_PRICE",
+            url,
+            override_price: pageInfo?.price || null,
+            custom_name: pageInfo?.title || null
+          },
+          (res) => {
+            if (res && res.success && res.data) {
+              renderProductCard(activeCard, res.data);
+            } else {
+              activeCard.innerHTML = `
+                <div style="font-size: 11px; color: #991B1B;">
+                  ${res?.error || "Unable to extract active page price."}
+                </div>
+              `;
+            }
+          }
+        );
       });
     }
   });
 
-  // 3. Handle manual search
+  // 4. Handle manual search
   analyzeBtn.addEventListener("click", () => {
     handleManualAnalysis();
   });
@@ -92,7 +188,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // 4. Render Product Card
+  // 5. Render Product Card
   function renderProductCard(container, data) {
     const curFormatted = Number(data.current_price).toLocaleString("en-IN", {
       style: "currency",

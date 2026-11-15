@@ -118,6 +118,21 @@ const RETAIL_CATALOG = {
   }
 };
 
+// Clean product slug from URL
+function extractTitleFromUrl(url) {
+  try {
+    const u = new URL(url);
+    const parts = u.pathname.split("/").filter(p => p && p !== "dp" && p !== "gp" && p !== "product" && p !== "p");
+    if (parts.length > 0) {
+      const slug = decodeURIComponent(parts[0]);
+      if (slug.length > 3 && !/^[A-Z0-9]{10}$/i.test(slug)) {
+        return slug.replace(/[-_]+/g, " ").replace(/\b\w/g, c => c.toUpperCase()).trim();
+      }
+    }
+  } catch (e) {}
+  return null;
+}
+
 // Compute clean standalone analysis for any Amazon or Flipkart URL
 function analyzeProductStandalone(url, overridePrice, customName, monthlyIncome = DEFAULT_INCOME) {
   const urlLower = (url || "").toLowerCase();
@@ -136,6 +151,9 @@ function analyzeProductStandalone(url, overridePrice, customName, monthlyIncome 
       break;
     }
   }
+
+  // Clean product title
+  const resolvedTitle = customName || (matched ? matched.name : extractTitleFromUrl(url)) || `${platform} Product`;
 
   // 2. Determine price and bounds
   let price = overridePrice;
@@ -226,7 +244,7 @@ function analyzeProductStandalone(url, overridePrice, customName, monthlyIncome 
   }
 
   return {
-    product_name: customName || (matched ? matched.name : (platform === "Amazon" ? "Amazon Product" : "Flipkart Product")),
+    product_name: resolvedTitle,
     platform: matched ? matched.platform : platform,
     product_url: url,
     current_price: price,

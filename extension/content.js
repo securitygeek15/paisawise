@@ -14,6 +14,33 @@
     return;
   }
 
+  // Extract DOM title
+  function extractPageTitle() {
+    try {
+      if (isAmazon) {
+        const t = document.querySelector("#productTitle, #title");
+        if (t && t.textContent.trim()) return t.textContent.trim();
+      } else if (isFlipkart) {
+        const t = document.querySelector("h1.VU-ZEz, h1.B_NuCI, h1");
+        if (t && t.textContent.trim()) return t.textContent.trim();
+      }
+      const rawTitle = document.title || "";
+      const cleaned = rawTitle.split(":")[0].split("|")[0].replace(/Buy /i, "").trim();
+      if (cleaned.length > 3) return cleaned;
+    } catch (e) {}
+    return null;
+  }
+
+  // Listen for popup requests
+  chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.action === "GET_PAGE_INFO") {
+      const title = extractPageTitle();
+      const price = extractPagePrice();
+      sendResponse({ title, price });
+      return true;
+    }
+  });
+
   // Extract DOM price
   function extractPagePrice() {
     try {

@@ -26,11 +26,14 @@
   <main class="content">
     <!-- Active Product Card (if on Amazon or Flipkart) -->
     <div id="active-product-section" class="section hidden">
-      <div class="section-badge">Active Product Detected</div>
+      <div class="active-badge-row">
+        <span class="section-badge">Active Product Detected</span>
+        <button id="toggle-search-btn" class="link-btn">Check another link &rarr;</button>
+      </div>
       <div class="card" id="active-product-card">
         <div class="spinner-container">
           <div class="spinner"></div>
-          <span class="muted-text">Analyzing page with Price Oracle...</span>
+          <span class="muted-text">Reading page price and history...</span>
         </div>
       </div>
     </div>
