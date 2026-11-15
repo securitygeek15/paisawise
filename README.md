@@ -32,6 +32,7 @@ PaisaWise includes a built-in decision engine that bridges e-commerce shopping w
 ## Main Features
 
 - Smart Buy & Price History Oracle: Evaluate product URLs against real historical trends and personal cashflow.
+- Chrome Extension (Manifest V3): Direct browser overlay and toolbar popup for Amazon and Flipkart that checks price drops, timing verdicts, and personal readiness in one click.
 - Overview Dashboard: Centralized view of total balance, monthly income, expenses, net savings, daily spending trends, and calculated financial insights.
 - Transactions Management: Add, edit, delete, search, filter by category/type/date, and sort financial records.
 - Category Budgets: Set monthly spending caps by category with visual warnings when nearing or exceeding limits.

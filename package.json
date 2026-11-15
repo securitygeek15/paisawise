@@ -10,7 +10,8 @@
     "dev:frontend": "cd frontend && npm run dev",
     "start": "python run.py",
     "test": "cd backend && pytest tests/test_api.py",
-    "build": "cd frontend && npm run build"
+    "build": "cd frontend && npm run build",
+    "build:extension": "python -c \"import os, zipfile; zipf = zipfile.ZipFile('paisawise-extension.zip', 'w', zipfile.ZIP_DEFLATED); [zipf.write(os.path.join(r, f), os.path.relpath(os.path.join(r, f), 'extension')) for r, d, files in os.walk('extension') for f in files if not f.endswith('.zip')]; print('Built paisawise-extension.zip')\""
   },
   "license": "MIT",
   "devDependencies": {
