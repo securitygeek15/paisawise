@@ -64,6 +64,20 @@ python run.py
 
 ---
 
+## Chrome Extension Setup
+
+Evaluate products directly while browsing Amazon (`amazon.in`, `amazon.com`) and Flipkart (`flipkart.com`).
+
+### Install from GitHub Releases
+1. Download `paisawise-extension.zip` from the latest [GitHub Releases](https://github.com/securitygeek15/paisawise/releases).
+2. Unzip the downloaded file to a local folder.
+3. In Google Chrome, Brave, or Microsoft Edge, navigate to `chrome://extensions/`.
+4. Enable the **Developer mode** toggle in the top-right corner.
+5. Click **Load unpacked** in the top-left corner and select the extracted folder (or the `extension` directory from this repository).
+6. Open any product page on Amazon or Flipkart to inspect price dips, timing verdicts, and your work-hours reality check via the floating drawer.
+
+---
+
 ### Option 2: Docker
 
 Run with Docker Compose:
