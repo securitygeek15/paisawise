@@ -25,6 +25,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { NavTab } from "../Sidebar";
+import { SmartSmsImportModal } from "@/components/SmartSmsImportModal";
 
 interface OverviewViewProps {
   onNavigate: (tab: NavTab) => void;
@@ -42,6 +43,7 @@ export function OverviewView({
   const { user } = useAuth();
   const [data, setData] = useState<OverviewData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isSmsModalOpen, setIsSmsModalOpen] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState<number>(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
 
@@ -240,27 +242,53 @@ export function OverviewView({
         </div>
       </div>
 
-      {/* Smart Buy & Price History Oracle */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-lg border border-[#EAEAEA] bg-white p-4 shadow-2xs hover:border-[#171717] transition-colors">
-        <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#171717] text-white">
-            <Tag className="h-5 w-5" />
+      {/* Feature Tools Grid: Price Oracle & Smart SMS Parser */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Smart Buy & Price History Oracle */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-lg border border-[#EAEAEA] bg-white p-4 shadow-2xs hover:border-[#171717] transition-colors">
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#171717] text-white">
+              <Tag className="h-5 w-5" />
+            </div>
+            <div>
+              <h3 className="text-xs font-semibold text-[#171717]">
+                Smart Buy &amp; Price History Oracle
+              </h3>
+              <p className="text-[11px] text-[#737373]">
+                Paste Amazon or Flipkart links to inspect historical sale dips &amp; financial readiness.
+              </p>
+            </div>
           </div>
-          <div>
-            <h3 className="text-xs font-semibold text-[#171717]">
-              Smart Buy &amp; Price History Oracle
-            </h3>
-            <p className="text-[11px] text-[#737373]">
-              Paste any product link (Amazon or Flipkart) to inspect historical sale dips, timing verdicts, and personal financial readiness.
-            </p>
-          </div>
+          <button
+            onClick={onOpenCanIAfford}
+            className="shrink-0 rounded-md bg-[#171717] px-3.5 py-1.5 text-xs font-medium text-white hover:bg-neutral-800 transition-colors self-start sm:self-auto"
+          >
+            Check Price &rarr;
+          </button>
         </div>
-        <button
-          onClick={onOpenCanIAfford}
-          className="shrink-0 rounded-md bg-[#171717] px-3.5 py-1.5 text-xs font-medium text-white hover:bg-neutral-800 transition-colors self-start sm:self-auto"
-        >
-          Check Product Price &rarr;
-        </button>
+
+        {/* Smart Offline Bank SMS Parser */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-lg border border-[#EAEAEA] bg-white p-4 shadow-2xs hover:border-[#171717] transition-colors">
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#171717] text-white">
+              <Sparkles className="h-5 w-5" />
+            </div>
+            <div>
+              <h3 className="text-xs font-semibold text-[#171717]">
+                Smart Offline SMS &amp; Statement Parser
+              </h3>
+              <p className="text-[11px] text-[#737373]">
+                Paste raw bank alerts (HDFC, SBI, ICICI, UPI) to extract &amp; batch import in 1 click.
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => setIsSmsModalOpen(true)}
+            className="shrink-0 rounded-md border border-[#171717] bg-white px-3.5 py-1.5 text-xs font-medium text-[#171717] hover:bg-[#FAFAFA] transition-colors self-start sm:self-auto"
+          >
+            Import SMS &rarr;
+          </button>
+        </div>
       </div>
 
       {/* 3. Spending Trends Chart */}
@@ -531,6 +559,15 @@ export function OverviewView({
           </div>
         )}
       </div>
+
+      {/* Smart SMS Import Modal */}
+      <SmartSmsImportModal
+        isOpen={isSmsModalOpen}
+        onClose={() => setIsSmsModalOpen(false)}
+        onImportSuccess={() => {
+          fetchOverview(selectedMonth, selectedYear);
+        }}
+      />
     </div>
   );
 }

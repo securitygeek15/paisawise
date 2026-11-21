@@ -197,3 +197,30 @@ class FinancialInsight(BaseModel):
     id: str
     text: str
     type: str  # "info", "positive", "warning"
+
+
+# --- SMS Parser & Batch Import Schemas ---
+class SMSParseRequest(BaseModel):
+    text: str = Field(..., min_length=5)
+
+
+class ParsedTransaction(BaseModel):
+    name: str
+    amount: Decimal
+    type: str
+    category: str
+    transaction_date: date
+    payment_method: str
+    notes: Optional[str] = None
+    confidence: float = 0.90
+    raw_text: str
+
+
+class BatchImportRequest(BaseModel):
+    transactions: List[TransactionCreate]
+
+
+class BatchImportResponse(BaseModel):
+    imported_count: int
+    transactions: List[TransactionResponse]
+

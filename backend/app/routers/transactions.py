@@ -6,7 +6,16 @@ from datetime import date
 from decimal import Decimal
 from app.database import get_db
 from app.models import Transaction, User
-from app.schemas import TransactionCreate, TransactionUpdate, TransactionResponse
+from app.schemas import (
+    TransactionCreate,
+    TransactionUpdate,
+    TransactionResponse,
+    SMSParseRequest,
+    ParsedTransaction,
+    BatchImportRequest,
+    BatchImportResponse,
+)
+from app.sms_parser import parse_sms_batch
 from app.auth import get_current_user
 
 router = APIRouter(prefix="/api/transactions", tags=["transactions"])
@@ -192,3 +201,59 @@ def delete_transaction(
     db.delete(tx)
     db.commit()
     return {"message": "Transaction deleted successfully."}
+
+
+@router.post("/parse-sms", response_model=List[ParsedTransaction])
+def parse_sms_endpoint(
+    payload: SMSParseRequest,
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Parses single or multi-line Indian bank SMS alerts completely offline.
+    Extracts Amount, Merchant, Category, Date, and Payment Method.
+    """
+    results = parse_sms_batch(payload.text)
+    if not results:
+        raise HTTPException(
+            status_code=400,
+            detail="Could not detect valid transaction details in the provided text. Please verify the SMS alert format."
+        )
+    return [ParsedTransaction(**r) for r in results]
+
+
+@router.post("/batch-import", response_model=BatchImportResponse, status_code=status.HTTP_201_CREATED)
+def batch_import_transactions(
+    payload: BatchImportRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Batch inserts multiple parsed transactions in a single atomic database operation.
+    """
+    if not payload.transactions:
+        raise HTTPException(status_code=400, detail="No transactions provided for batch import.")
+
+    created = []
+    for tx_in in payload.transactions:
+        tx = Transaction(
+            user_id=current_user.id,
+            name=tx_in.name.strip(),
+            amount=tx_in.amount,
+            type=tx_in.type,
+            category=tx_in.category.strip(),
+            transaction_date=tx_in.transaction_date,
+            payment_method=tx_in.payment_method.strip(),
+            notes=tx_in.notes.strip() if tx_in.notes else None,
+        )
+        db.add(tx)
+        created.append(tx)
+
+    db.commit()
+    for tx in created:
+        db.refresh(tx)
+
+    return BatchImportResponse(
+        imported_count=len(created),
+        transactions=[TransactionResponse.model_validate(tx) for tx in created]
+    )
+

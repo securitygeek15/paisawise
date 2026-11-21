@@ -29,9 +29,22 @@ PaisaWise includes a built-in decision engine that bridges e-commerce shopping w
 
 ---
 
+## Highlight Feature 2: Smart Offline Bank SMS & Statement Parser
+
+Eliminates manual transaction typing with a 100% on-device heuristic parser for Indian bank alerts:
+
+- Zero Cloud Transmission: Parses raw bank SMS text directly on your local machine. No external servers, aggregators, or credential sharing.
+- Multi-Bank Support: Supports SMS alerts from HDFC Bank, SBI, ICICI Bank, Axis Bank, Paytm, PhonePe, Google Pay, and generic UPI VPAs.
+- Intelligent Extraction: Automatically parses exact Amount, Type (Income vs Expense), Merchant / Beneficiary, Category, Date, and Payment Method.
+- Batch Processing: Paste a single alert or multi-line batch from your clipboard to preview and import dozens of transactions into your local database in 1 click.
+- Sample Presets: Includes built-in one-click presets (HDFC Swiggy, SBI Salary, ICICI Amazon, Blinkit, Uber, and Batch) for instant evaluation.
+
+---
+
 ## Main Features
 
 - Smart Buy & Price History Oracle: Evaluate product URLs against real historical trends and personal cashflow.
+- Smart Offline Bank SMS Parser: Ingest raw bank alerts and batch-import transactions with zero manual typing and zero cloud sharing.
 - Chrome Extension (Manifest V3): Direct browser overlay and toolbar popup for Amazon and Flipkart that checks price drops, timing verdicts, and personal readiness in one click.
 - Overview Dashboard: Centralized view of total balance, monthly income, expenses, net savings, daily spending trends, and calculated financial insights.
 - Transactions Management: Add, edit, delete, search, filter by category/type/date, and sort financial records.

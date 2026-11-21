@@ -237,3 +237,78 @@ def test_analytics_and_export():
     assert bad_res.status_code == 400
     assert "Amazon" in bad_res.json()["detail"]
     assert "Flipkart" in bad_res.json()["detail"]
+
+
+def test_sms_parser_and_batch_import():
+    res = client.post("/api/auth/demo")
+    headers = {"Authorization": f"Bearer {res.json()['access_token']}"}
+
+    sms_batch_text = """
+    Rs 450.00 debited from a/c **1234 on 12-Nov-26 to VPA swiggy@icici (UPI Ref 431289123).
+    Your A/C 1234 is credited with INR 85,000.00 on 01-Nov-26 by Salary (Ref 998811).
+    Alert: You have spent INR 1,299.00 on HDFC Bank Credit Card ending 8812 at AMAZON INDIA on 10-NOV-2026.
+    INR 350.00 spent on Axis Bank card at UBER INDIA on 13-Nov-26.
+    """
+
+    # 1. Test Parse SMS
+    parse_res = client.post(
+        "/api/transactions/parse-sms",
+        json={"text": sms_batch_text},
+        headers=headers,
+    )
+    assert parse_res.status_code == 200
+    parsed_items = parse_res.json()
+    assert len(parsed_items) == 4
+
+    # Verify Swiggy parsed correctly
+    swiggy = next(item for item in parsed_items if "Swiggy" in item["name"])
+    assert float(swiggy["amount"]) == 450.00
+    assert swiggy["type"] == "expense"
+    assert swiggy["category"] == "Dining & Cafes"
+    assert swiggy["payment_method"] == "UPI"
+
+    # Verify Salary parsed correctly
+    salary = next(item for item in parsed_items if item["type"] == "income")
+    assert float(salary["amount"]) == 85000.00
+    assert salary["category"] == "Salary"
+
+    # Verify Amazon parsed correctly
+    amazon = next(item for item in parsed_items if "Amazon" in item["name"])
+    assert float(amazon["amount"]) == 1299.00
+    assert amazon["category"] == "Shopping"
+    assert amazon["payment_method"] == "Credit Card"
+
+    # Verify Uber parsed correctly
+    uber = next(item for item in parsed_items if "Uber" in item["name"])
+    assert float(uber["amount"]) == 350.00
+    assert uber["category"] == "Transportation"
+
+    # 2. Test Batch Import
+    to_import = [
+        {
+            "name": p["name"],
+            "amount": p["amount"],
+            "type": p["type"],
+            "category": p["category"],
+            "transaction_date": p["transaction_date"],
+            "payment_method": p["payment_method"],
+            "notes": p.get("notes"),
+        }
+        for p in parsed_items
+    ]
+
+    import_res = client.post(
+        "/api/transactions/batch-import",
+        json={"transactions": to_import},
+        headers=headers,
+    )
+    assert import_res.status_code == 201
+    import_data = import_res.json()
+    assert import_data["imported_count"] == 4
+    assert len(import_data["transactions"]) == 4
+
+    # 3. Verify they show up in transaction list
+    tx_res = client.get("/api/transactions?search=Swiggy", headers=headers)
+    assert tx_res.status_code == 200
+    assert len(tx_res.json()["items"]) >= 1
+

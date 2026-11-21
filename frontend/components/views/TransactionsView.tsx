@@ -17,7 +17,9 @@ import {
   ArrowDownLeft,
   ArrowUpRight,
   X,
+  Sparkles,
 } from "lucide-react";
+import { SmartSmsImportModal } from "@/components/SmartSmsImportModal";
 
 interface TransactionsViewProps {
   onOpenNewTx: () => void;
@@ -46,6 +48,7 @@ export function TransactionsView({
   // Delete modal state
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [isSmsModalOpen, setIsSmsModalOpen] = useState(false);
 
   // Fetch categories
   useEffect(() => {
@@ -126,13 +129,22 @@ export function TransactionsView({
           </p>
         </div>
 
-        <button
-          onClick={onOpenNewTx}
-          className="flex items-center gap-1.5 rounded-md bg-[#171717] px-3.5 py-2 text-xs font-medium text-white hover:bg-neutral-800 transition-colors self-start sm:self-auto"
-        >
-          <Plus className="h-4 w-4" />
-          <span>Add Transaction</span>
-        </button>
+        <div className="flex items-center gap-2 self-start sm:self-auto">
+          <button
+            onClick={() => setIsSmsModalOpen(true)}
+            className="flex items-center gap-1.5 rounded-md border border-[#EAEAEA] bg-white px-3 py-2 text-xs font-medium text-[#171717] hover:bg-[#FAFAFA] transition-colors"
+          >
+            <Sparkles className="h-3.5 w-3.5 text-[#171717]" />
+            <span>Smart SMS Import</span>
+          </button>
+          <button
+            onClick={onOpenNewTx}
+            className="flex items-center gap-1.5 rounded-md bg-[#171717] px-3.5 py-2 text-xs font-medium text-white hover:bg-neutral-800 transition-colors"
+          >
+            <Plus className="h-4 w-4" />
+            <span>Add Transaction</span>
+          </button>
+        </div>
       </div>
 
       {/* 2. Filters & Search Toolbar */}
@@ -427,6 +439,14 @@ export function TransactionsView({
           </div>
         </div>
       )}
+      {/* 6. Smart SMS Import Modal */}
+      <SmartSmsImportModal
+        isOpen={isSmsModalOpen}
+        onClose={() => setIsSmsModalOpen(false)}
+        onImportSuccess={() => {
+          fetchTransactions();
+        }}
+      />
     </div>
   );
 }
